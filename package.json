@@ -1,0 +1,11 @@
+{
+  "name": "paper-library",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {"gsap": "^3.13.0", "react": "^19.2.0", "react-dom": "^19.2.0"},
+  "devDependencies": {"esbuild": "^0.25.0"}
+}

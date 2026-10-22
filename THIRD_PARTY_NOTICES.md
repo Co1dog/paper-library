@@ -1,0 +1,15 @@
+# Third-party notices and provenance
+
+## React Bits DepthCarousel
+
+- Source: https://reactbits.dev/r/DepthCarousel-JS-CSS.json
+- Upstream: https://github.com/DavidHDev/react-bits
+- Retrieved: 2026-10-23 (JS-CSS variant)
+- Copyright: David Haz
+- License: MIT + Commons Clause. See the upstream license below.
+- Adaptations: symmetric cylindrical arc with vertical displacement and rotateY/rotateZ; HTML paper covers and detail-opening events; horizontal-only trackpad handling; drag-click suppression; localized controls; offscreen/document-hidden/reduced-motion autoplay handling. Default stock photos are not used.
+
+React and React DOM are MIT licensed. GSAP is distributed under its Standard License:
+https://gsap.com/community/standard-license/
+
+The bundled production JavaScript retains license comments in its adjacent `.LEGAL.txt` file.

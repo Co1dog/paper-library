@@ -16,15 +16,16 @@ let papers = [], currentView = 'all', activeTopics = new Set(), isDemo = true, b
 const $ = id => document.getElementById(id);
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const safeURL = value => {try {const url=new URL(value);return ['https:','http:'].includes(url.protocol)?url.href:'';} catch{return '';}};
+function starIcon(filled){return `<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"${filled?' style="fill:currentColor"':''}><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6-5.4-2.8-5.4 2.8 1-6-4.4-4.3 6.1-.9Z"/></svg>`;}
 function notify(message){$('toast').textContent=message;$('toast').hidden=false;clearTimeout(notify.timer);notify.timer=setTimeout(()=>$('toast').hidden=true,3500);}
 function showDialog(dialog){if(!dialog.open)dialog.showModal();}
 function getSource(){return isDemo?DEMO:papers;}
 function recentPaper(p){const d=new Date(p.readDate+'T00:00:00');const now=new Date();const days=(new Date(now.getFullYear(),now.getMonth(),now.getDate())-d)/86400000;return days>=0&&days<=30;}
 function updateStats(){
  const topics=new Set(papers.map(p=>p.topic));
- $('stat-papers').textContent=String(papers.length).padStart(2,'0');
- $('stat-topics').textContent=String(topics.size).padStart(2,'0');
- $('stat-notes').textContent=String(papers.filter(p=>p.notes.trim()).length).padStart(2,'0');
+ $('stat-papers').textContent=String(papers.length);
+ $('stat-topics').textContent=String(topics.size);
+ $('stat-notes').textContent=String(papers.filter(p=>p.notes.trim()).length);
  $('nav-all').textContent=papers.length;
  $('nav-recent').textContent=papers.filter(recentPaper).length;
  $('nav-favorite').textContent=papers.filter(p=>p.favorite).length;
@@ -35,8 +36,11 @@ function topicControls(){
  $('filters').innerHTML='<button class="chip'+(!activeTopics.size?' active':'')+'" data-topic="">全部主题</button>'+topics.map(t=>`<button class="chip${activeTopics.has(t)?' active':''}" data-topic="${escapeHTML(t)}" aria-pressed="${activeTopics.has(t)}">${escapeHTML(t)}</button>`).join('');
  $('sidebar-topics').innerHTML=topics.map(t=>`<button class="topic-item${activeTopics.has(t)?' active':''}" data-topic="${escapeHTML(t)}"><span class="topic-dot"></span>${escapeHTML(t)}${isDemo?' <span class="demo-label">示例</span>':''}</button>`).join('')||'<p class="sidebar-empty">添加论文后，<br>主题会在这里慢慢生长。</p>';
 }
+function updateCarousel(){window.dispatchEvent(new CustomEvent('paper-library:update',{detail:{papers:getSource(),isDemo}}));}
+window.addEventListener('paper-library:carousel-ready',updateCarousel);
+window.addEventListener('paper-library:open',event=>detail(String(event.detail?.id||'')));
 function render(){
- updateStats();topicControls();$('demo-banner').hidden=!isDemo;
+ updateCarousel();updateStats();topicControls();$('demo-banner').hidden=!isDemo;
  const query=$('search').value.trim().toLocaleLowerCase();
  let found=getSource().filter(p=>(!activeTopics.size||activeTopics.has(p.topic))&&(!query||[p.title,p.authors,p.venue,p.topic,p.summary,p.notes,String(p.year)].join(' ').toLocaleLowerCase().includes(query)));
  if(currentView==='favorite')found=found.filter(p=>p.favorite);
@@ -47,14 +51,14 @@ function render(){
  $('result-count').textContent=`${found.length} ${isDemo?'篇示例':'篇'}`;
  $('papers').innerHTML=found.map(p=>{
  const idx=[...new Set(getSource().map(x=>x.topic))].indexOf(p.topic)%3;
- return `<article class="paper-card" data-color="${idx}"><div class="card-top"><span class="topic-pill">${escapeHTML(p.topic)}${isDemo?' · 示例':''}</span><span class="card-star ${p.favorite?'filled':''}" title="${p.favorite?'重点收藏':'普通收藏'}">${p.favorite?'★':'☆'}</span></div><button class="card-open" data-detail="${escapeHTML(p.id)}" aria-label="查看 ${escapeHTML(p.title)}"><h3 class="paper-title">${escapeHTML(p.title)}</h3><span class="card-authors">${escapeHTML(p.authors||'作者待补充')}</span><span class="card-venue">${escapeHTML(p.venue||'期刊待补充')} ${p.year?' / '+p.year:''}</span><p class="card-summary">${escapeHTML(p.summary||'打开论文，回看阅读笔记。')}</p></button><div class="card-bottom"><span>◷ ${escapeHTML(p.readDate||'日期待补充')}</span><button data-detail="${escapeHTML(p.id)}">${p.notes.trim()?'▧ 阅读笔记':'查看详情'} ↗</button></div></article>`;
+ return `<article class="paper-card" data-color="${idx}"><div class="card-top"><span class="topic-pill">${escapeHTML(p.topic)}${isDemo?' · 示例':''}</span><span class="card-star ${p.favorite?'filled':''}" title="${p.favorite?'重点收藏':'普通收藏'}">${starIcon(p.favorite)}</span></div><button class="card-open" data-detail="${escapeHTML(p.id)}" aria-label="查看 ${escapeHTML(p.title)}"><h3 class="paper-title">${escapeHTML(p.title)}</h3><span class="card-authors">${escapeHTML(p.authors||'作者待补充')}</span><span class="card-venue">${escapeHTML(p.venue||'期刊待补充')} ${p.year?' / '+p.year:''}</span><p class="card-summary">${escapeHTML(p.summary||'打开论文，回看阅读笔记。')}</p></button><div class="card-bottom"><span>◷ ${escapeHTML(p.readDate||'日期待补充')}</span><button data-detail="${escapeHTML(p.id)}">${p.notes.trim()?'▧ 阅读笔记':'查看详情'} ↗</button></div></article>`;
  }).join('');
  $('empty').hidden=found.length>0;
 }
 function detail(id){
  const p=getSource().find(x=>String(x.id)===id);if(!p)return;
  const url=safeURL(p.url),issue=safeURL(p.issueURL);
- $('detail-content').innerHTML=`<div class="eyebrow mini">${isDemo?'DESIGN PREVIEW':'FROM YOUR LIBRARY'}</div><h2 class="detail-title">${escapeHTML(p.title)}</h2><div class="detail-meta">${escapeHTML(p.authors||'作者待补充')}<br>${escapeHTML(p.venue||'期刊待补充')} ${p.year?' / '+p.year:''}<br><span class="topic-pill">${escapeHTML(p.topic)}</span>　阅读于 ${escapeHTML(p.readDate)} ${p.favorite?' · ★ 重点收藏':''}</div>${p.summary?`<div class="detail-summary">${escapeHTML(p.summary)}</div>`:''}<h3 class="notes-heading">READING NOTES / 阅读笔记</h3><div class="detail-notes">${escapeHTML(p.notes||'还没有笔记。可以在 GitHub 中补充你的想法。')}</div><div class="detail-actions">${url?`<a class="primary" href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer">打开原文 ↗</a>`:''}${issue?`<a class="secondary" href="${escapeHTML(issue)}" target="_blank" rel="noopener noreferrer">在 GitHub 编辑 ↗</a>`:''}</div>${isDemo?'<div class="detail-demo">这是设计示例，不是真实文献条目。添加你的第一篇论文后，书架会显示自己的阅读记录。</div>':''}`;
+ $('detail-content').innerHTML=`<div class="detail-source">${isDemo?'示例文献':'来自我的书架'}</div><h2 class="detail-title">${escapeHTML(p.title)}</h2><div class="detail-meta">${escapeHTML(p.authors||'作者待补充')}<br>${escapeHTML(p.venue||'期刊待补充')} ${p.year?' / '+p.year:''}<br><span class="topic-pill">${escapeHTML(p.topic)}</span>　阅读于 ${escapeHTML(p.readDate)} ${p.favorite?' · 重点收藏':''}</div>${p.summary?`<div class="detail-summary">${escapeHTML(p.summary)}</div>`:''}<h3 class="notes-heading">READING NOTES / 阅读笔记</h3><div class="detail-notes">${escapeHTML(p.notes||'还没有笔记。可以在 GitHub 中补充你的想法。')}</div><div class="detail-actions">${url?`<a class="primary" href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer">打开原文 ↗</a>`:''}${issue?`<a class="secondary" href="${escapeHTML(issue)}" target="_blank" rel="noopener noreferrer">在 GitHub 编辑 ↗</a>`:''}</div>${isDemo?'<div class="detail-demo">这是设计示例，不是真实文献条目。添加你的第一篇论文后，书架会显示自己的阅读记录。</div>':''}`;
  showDialog($('detail-dialog'));
 }
 function normalizePaper(raw,issue){
@@ -83,7 +87,7 @@ async function loadPapers(){
    if(page===10)throw new Error('记录超过一次读取范围（1000 条）。请归档早期记录后再刷新。');
   }
   papers=collected;isDemo=!papers.length;activeTopics.clear();
-  $('cloud-status').textContent='✓ 已从 GitHub 更新';
+  $('cloud-status').textContent='已从 GitHub 更新';
   if(invalid){$('notice').textContent=`有 ${invalid} 条记录的 JSON 格式需要修复；其他论文已正常显示。请在 GitHub 查看。`;$('notice').hidden=false;}
   render();
  }catch(error){

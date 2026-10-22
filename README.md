@@ -46,7 +46,7 @@
 仓库 Settings → Pages → Source 选择 **Deploy from a branch**，Branch 选择 **main**，目录选择 **/(root)**，Save。
 之后修改 main 分支文件会触发 Pages 更新。
 
-源码为纯 HTML / CSS / JavaScript，不需要安装依赖或构建。`.nojekyll` 禁用 Jekyll 处理。
+主体为 HTML / CSS / JavaScript，轮播使用预先构建的 React island。部署现有版本无需安装依赖或构建；修改轮播源码后的构建方法见下文。`.nojekyll` 禁用 Jekyll 处理。
 
 ## 记录格式
 
@@ -72,3 +72,25 @@
 ```
 
 若迁移到其他仓库，请修改 `app.js` 中的 `OWNER` / `REPO`，以及 HTML 和本说明中的账号文案。
+
+## 立体弧形书架
+
+- 当前文献居中，两侧沿圆柱弧线后退和旋转。
+- 优先展示重点收藏，然后按最近阅读排序，最多 8 篇。
+- 点击侧面卡片将其移到中间，点击中间卡片或「打开阅读笔记」查看笔记。
+- 支持拖拽、左右键、触屏和横向触控板；普通纵向滚动仍滚动网页。
+- 自动轮播默认关闭；手动开启后在悬停、键盘焦点、页面隐藏、轮播离屏或笔记弹窗开启时暂停。
+- 尊重系统 prefers-reduced-motion，关闭自动与位移动效。
+- 轮播与普通列表使用同一份 GitHub 数据。没有真实论文时清楚标注示例。
+- 文献卡片为标题与主题生成的排版封面，不是论文 PDF 首页。
+
+主体页面仍使用 HTML / CSS / JavaScript；立体轮播是独立 React island，采用 React Bits DepthCarousel + GSAP。生产 bundle 已提交到 assets/，GitHub Pages 直接发布根目录。
+
+### 修改轮播源码
+
+```sh
+pnpm install --frozen-lockfile
+pnpm run build
+```
+
+修改 src/ 后必须重新构建并提交 assets/。修改 app.js、style.css 等主体文件无需构建。依赖版本由 pnpm-lock.yaml 固定。组件来源、修改说明和许可证见 THIRD_PARTY_NOTICES.md 与 REACT_BITS_LICENSE.md。
