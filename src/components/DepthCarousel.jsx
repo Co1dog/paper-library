@@ -43,6 +43,11 @@ const DepthCarousel = ({
   const stageRef = useRef(null);
   const cardRefs = useRef([]);
   const overlayRefs = useRef([]);
+  const shadowRefs = useRef([]);
+  const sceneRef = useRef({x:0,y:0});
+  const sceneToRef = useRef(null);
+  const pulseRef = useRef(0);
+  const directionRef = useRef(1);
 
   const posRef = useRef(0);
   const focusRef = useRef(0);
@@ -77,6 +82,7 @@ const DepthCarousel = ({
     ease,
     loop,
     cardWidth,
+    cardHeight,
     autoplayDelay
   };
 
@@ -99,22 +105,26 @@ const DepthCarousel = ({
 
       const az = Math.abs(d);
       const shown = az <= cfg.visibleCards + 0.5;
-      // Cylindrical arc: center is nearest, side cards recede and turn toward the reader.
-      const angle = d * 0.43;
-      const tx = Math.sin(angle) * cfg.spread * 2.3;
-      const ty = (1 - Math.cos(angle)) * 135;
-      const tz = -(1 - Math.cos(angle)) * cfg.depth * 2.1 - az * 12;
-      const ry = -d * cfg.tilt;
-      const rz = d * 3.1;
+      // A deeper cylindrical orbit: the central volume sits in front of the focal plane.
+      const angle = d * 0.64;
+      const tx = d * cfg.spread * 1.2;
+      const pulse=pulseRef.current;
+      const ty = (1 - Math.cos(angle)) * 92 - pulse * 34 * Math.max(0,1-az*.3);
+      const tz = 55 - (1 - Math.cos(angle)) * cfg.depth * 1.65 - az * 32;
+      const ry = -Math.sign(d)*Math.min(az*cfg.tilt,68) + pulse * directionRef.current * 8;
+      const rz = d * 2.5 + pulse * directionRef.current * 2.5;
       const opacity = shown ? clamp((cfg.visibleCards + 0.5 - az) * 1.5, 0, 1) : 0;
       const zi = Math.round(2000 - az * 100);
-      el.style.transform = `translate(-50%, -50%) scale(${sc}) translate3d(${tx.toFixed(2)}px, ${ty.toFixed(2)}px, ${tz.toFixed(2)}px) rotateY(${ry.toFixed(3)}deg) rotateZ(${rz.toFixed(3)}deg)`;
+      el.style.transform = `translate(-50%, -50%) scale(${sc}) translate3d(${tx.toFixed(2)}px, ${ty.toFixed(2)}px, ${tz.toFixed(2)}px) rotateX(${(-4+pulse*7).toFixed(2)}deg) rotateY(${ry.toFixed(3)}deg) rotateZ(${rz.toFixed(3)}deg)`;
       el.style.opacity = opacity.toFixed(3);
       el.style.zIndex = String(zi);
       el.style.pointerEvents = shown && opacity > 0.05 ? 'auto' : 'none';
       const ov = overlayRefs.current[i];
       if (ov) ov.style.opacity = clamp(az * cfg.falloff, 0, 0.42).toFixed(3);
+      const shadow=shadowRefs.current[i];
+      if(shadow){shadow.style.transform=`translate(-50%,-50%) scale(${sc}) translate3d(${tx.toFixed(2)}px,${(cfg.cardHeight/2+45+ty*.15).toFixed(2)}px,${tz.toFixed(2)}px) rotateX(60deg) scale(${1-az*.13+pulse*.15})`;shadow.style.opacity=String(opacity*Math.max(.025,.12-az*.035));}
     }
+    if(stageRef.current){const scene=sceneRef.current;stageRef.current.style.transform=`rotateX(${scene.y}deg) rotateY(${scene.x}deg) rotateZ(${pulseRef.current*directionRef.current*-.8}deg)`;}
   }, []);
 
   const notify = useCallback(
@@ -129,18 +139,22 @@ const DepthCarousel = ({
     (target, animate) => {
       tweenRef.current?.kill();
       const cfg = cfgRef.current;
-      const proxy = { p: posRef.current };
+      const proxy = { p: posRef.current, phase:0 };
+      directionRef.current=Math.sign(target-posRef.current)||1;
       const dur = animate && !reducedRef.current ? cfg.duration / 1000 : 0;
       tweenRef.current = gsap.to(proxy, {
         p: target,
+        phase:1,
         duration: dur,
         ease: cfg.ease,
         onUpdate: () => {
           posRef.current = proxy.p;
+          pulseRef.current=Math.sin(Math.min(proxy.phase,1)*Math.PI);
           layout(proxy.p);
         },
         onComplete: () => {
           const n = cfg.count;
+          pulseRef.current=0;
           if (n > 0) posRef.current = ((posRef.current % n) + n) % n;
           layout(posRef.current);
         }
@@ -177,13 +191,23 @@ const DepthCarousel = ({
     const ro = new ResizeObserver(entries => {
       const w = entries[0].contentRect.width;
       const cfg = cfgRef.current;
-      const needed = cfg.cardWidth * 1.85;
-      scaleRef.current = clamp(w / needed, 0.58, 1);
+      const needed = cfg.cardWidth * 2.25;
+      const h=entries[0].contentRect.height;
+      scaleRef.current = clamp(Math.min(w/needed,(h-70)/(cardHeight*1.15)),0.48,1);
+      root.style.setProperty('--dc-scale',scaleRef.current);
       layout(posRef.current);
     });
     ro.observe(root);
     return () => ro.disconnect();
-  }, [layout]);
+  }, [layout,cardHeight]);
+
+  useEffect(()=>{
+    const ctx=gsap.context(()=>{
+      const scene=sceneRef.current;
+      sceneToRef.current={x:gsap.quickTo(scene,'x',{duration:.75,ease:'power3.out',onUpdate:()=>layout(posRef.current)}),y:gsap.quickTo(scene,'y',{duration:.75,ease:'power3.out',onUpdate:()=>layout(posRef.current)})};
+    },rootRef);
+    return ()=>{ctx.revert();sceneToRef.current=null;};
+  },[layout]);
 
   useEffect(() => {
     const el = rootRef.current;
@@ -230,7 +254,10 @@ const DepthCarousel = ({
   const onPointerMove = useCallback(
     e => {
       const drag = dragRef.current;
-      if (!drag) return;
+      if (!drag) {
+        if(e.pointerType==='mouse'&&!reducedRef.current&&sceneToRef.current){const rect=rootRef.current.getBoundingClientRect();sceneToRef.current.x((e.clientX-rect.left-rect.width/2)/rect.width*7);sceneToRef.current.y(-(e.clientY-rect.top-rect.height/2)/rect.height*5);}
+        return;
+      }
       const cfg = cfgRef.current;
       const stepPx = Math.max(cfg.cardWidth * 0.55 * scaleRef.current, 40);
       const dx = e.clientX - drag.x;
@@ -245,6 +272,7 @@ const DepthCarousel = ({
       drag.lastX = e.clientX;
       drag.lastT = now;
       posRef.current = drag.startPos - dx / stepPx;
+      pulseRef.current=Math.min(Math.abs(drag.v)*.12,.35);
       layout(posRef.current);
     },
     [layout]
@@ -261,8 +289,9 @@ const DepthCarousel = ({
     if (rootRef.current?.hasPointerCapture(drag.id)) rootRef.current.releasePointerCapture(drag.id);
     const cfg = cfgRef.current;
     const stepPx = Math.max(cfg.cardWidth * 0.55 * scaleRef.current, 40);
-    const projected = posRef.current - (drag.v * 180) / stepPx;
-    setFocus(Math.round(projected), true);
+    const velocity=performance.now()-drag.lastT>100?0:drag.v;
+    const projected = posRef.current - clamp((velocity * 220) / stepPx,-2,2);
+    setFocus(clamp(Math.round(projected),Math.round(drag.startPos)-2,Math.round(drag.startPos)+2), true);
   }, [setFocus]);
 
   const onKeyDown = useCallback(
@@ -334,7 +363,7 @@ const DepthCarousel = ({
 
   useEffect(() => {
     const query = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const onChange = () => { reducedRef.current = query.matches; if (query.matches) { tweenRef.current?.kill(); setFocus(focusRef.current, false); } };
+    const onChange = () => { reducedRef.current = query.matches; if (query.matches) { tweenRef.current?.kill();sceneToRef.current?.x.tween.pause();sceneToRef.current?.y.tween.pause();sceneRef.current.x=0;sceneRef.current.y=0; setFocus(focusRef.current, false); } };
     onChange(); query.addEventListener('change', onChange);
     const observer = new IntersectionObserver(([entry]) => { intersectingRef.current = entry.isIntersecting; });
     if (rootRef.current) observer.observe(rootRef.current);
@@ -366,11 +395,13 @@ const DepthCarousel = ({
       tabIndex={0}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
+      onPointerLeave={()=>{if(sceneToRef.current&&!reducedRef.current){sceneToRef.current.x(0);sceneToRef.current.y(0);}}}
       onPointerUp={onPointerEnd}
       onPointerCancel={onPointerEnd}
       onKeyDown={onKeyDown}
     >
       <div className="depth-carousel__stage" ref={stageRef}>
+        {data.map((_,i)=><div key={'shadow-'+i} className="depth-carousel__shadow" ref={el=>(shadowRefs.current[i]=el)} aria-hidden="true"/>)}
         {data.map((item, i) => (
           <div
             key={i}
@@ -433,7 +464,7 @@ const DepthCarousel = ({
         </>
       )}
 
-      {showIndicators && count > 1 && (
+      {showIndicators && count > 1 && count <=8 && (
         <div className="depth-carousel__dots" role="group" aria-label="选择轮播论文">
           {data.map((_, i) => (
             <button

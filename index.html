@@ -3,43 +3,51 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Paper Library — 收藏读过的论文，连接研究中的想法。">
-<meta name="theme-color" content="#f3f5f0">
+<meta name="theme-color" content="#F2F1ED">
 <title>Paper Library · 我的论文书架</title>
 <link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./assets/arc-gallery.css">
 <script src="./app.js" defer></script><script type="module" src="./assets/arc-gallery.js"></script>
 </head>
 <body>
-<a class="skip" href="#main">跳到论文列表</a>
-<aside class="sidebar">
-<a class="brand" href="./" aria-label="Paper Library 首页"><span class="brand-icon">p<span>l</span></span><span>paper library<span class="brand-sub">A home for your reading.</span></span></a>
-<div class="workspace"><span class="avatar">C</span><div>我的研究空间<small>Co1dog's workspace</small></div><span class="live-dot" title="GitHub 云端书架"></span></div>
-<div class="nav-label">我的书架</div>
-<nav aria-label="书架导航">
-<button class="nav-item active" data-view="all"><span class="nav-symbol">▤</span>全部论文<span class="count" id="nav-all">0</span></button>
-<button class="nav-item" data-view="recent"><span class="nav-symbol">◷</span>最近阅读<span class="count" id="nav-recent">0</span></button>
-<button class="nav-item" data-view="favorite"><span class="nav-symbol"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6-5.4-2.8-5.4 2.8 1-6-4.4-4.3 6.1-.9Z"/></svg></span>重点收藏<span class="count" id="nav-favorite">0</span></button>
-<button class="nav-item" data-view="notes"><span class="nav-symbol">▧</span>阅读笔记<span class="count" id="nav-notes">0</span></button>
-</nav>
-<div class="nav-label topic-label">研究主题</div>
-<div id="sidebar-topics" class="sidebar-topics"></div>
-<div class="sidebar-bottom"><div class="little-note"><span>一点一点，<br>把好奇心变成理解。</span><svg viewBox="0 0 100 58" aria-hidden="true"><path d="M5 48 Q25 10 47 39 T93 13 M78 13 L94 12 L92 28"/></svg></div><a id="repo-link" target="_blank" rel="noopener" class="repo-link">↗ 在 GitHub 查看书架</a><button id="help-open" class="help-button">使用指南 <span>?</span></button></div>
-</aside>
-<div class="page">
-<header class="topbar"><span class="breadcrumb">我的研究空间 <span>/</span> <strong id="view-name">全部论文</strong></span><div class="top-actions"><span class="cloud-status" id="cloud-status" role="status">◌ 正在连接 GitHub</span><button class="icon-button mobile-help" id="help-mobile" aria-label="使用指南">?</button><button class="icon-button" id="refresh" aria-label="刷新 GitHub 论文">↻</button><button class="primary small" data-open-add><span>＋</span> 添加论文</button></div></header>
-<nav class="mobile-nav" aria-label="移动端书架导航"><button class="active" data-view="all">全部论文</button><button data-view="recent">最近阅读</button><button data-view="favorite">重点收藏</button><button data-view="notes">阅读笔记</button></nav>
+<a class="skip" href="#main">跳到论文书架</a>
+<header class="topbar">
+ <a class="brand" href="./" aria-label="Paper Library 首页"><span class="brand-mark">pl.</span><span>paper library</span></a>
+ <span class="workspace-name">Co1dog 的阅读收藏</span>
+ <button id="menu-toggle" class="menu-toggle" aria-label="打开功能菜单" aria-haspopup="dialog" aria-controls="menu-dialog" aria-expanded="false"><span></span><span></span><span></span></button>
+</header>
 <main id="main">
-<section class="arc-hero" aria-labelledby="arc-title"><div class="arc-heading"><h1 id="arc-title">把读过的论文，重新翻开。</h1><p>留下文献，也留下阅读时的想法。<br>你的研究线索，都在这张书架上。</p></div><div id="arc-gallery"><p class="arc-fallback">正在整理你的书架… <a href="#library-title">查看全部论文 →</a></p></div><noscript><p>立体书架需要 JavaScript。你也可以<a href="https://github.com/Co1dog/paper-library/issues">直接在 GitHub 查看论文记录</a>。</p></noscript></section>
-<section class="stats" aria-label="书架统计"><div><span id="stat-papers">0</span><p>已读论文<small>PAPERS READ</small></p></div><div><span id="stat-topics">0</span><p>研究主题<small>RESEARCH TOPICS</small></p></div><div><span id="stat-notes">0</span><p>阅读笔记<small>READING NOTES</small></p></div><div class="stats-quote">“ 阅读的价值，<br>　也在再次翻开的那一刻。 ”</div></section>
+ <section class="arc-hero" aria-labelledby="arc-title">
+  <div class="arc-heading"><h1 id="arc-title">我的论文书架</h1><p>读过的论文，值得再次翻开。</p></div>
+  <div id="arc-gallery"><p class="arc-fallback">正在整理你的书架… <button data-open-library>查看全部论文 →</button></p></div>
+  <noscript><p><a href="https://github.com/Co1dog/paper-library/issues">在 GitHub 查看论文记录 →</a></p></noscript>
+ </section>
+</main>
+<footer class="shelf-footer"><span id="shelf-scope">全部论文</span><span id="shelf-state">正在连接 GitHub</span><span>Paper Library / 阅读收藏</span></footer>
+<dialog id="menu-dialog" class="menu-drawer" aria-labelledby="menu-title">
+ <button class="close" data-close aria-label="关闭功能菜单">×</button><h2 id="menu-title">书架功能</h2>
+ <p class="drawer-intro">Co1dog 的研究空间</p>
+ <div class="menu-actions"><button class="primary full" data-open-add>＋ 添加论文</button><button class="secondary full" data-open-library>搜索与筛选论文 <span>↗</span></button></div>
+ <nav class="drawer-nav" aria-label="书架导航">
+  <button class="nav-item active" data-view="all">全部论文 <span class="count" id="nav-all">0</span></button>
+  <button class="nav-item" data-view="recent">最近 30 天阅读 <span class="count" id="nav-recent">0</span></button>
+  <button class="nav-item" data-view="favorite">重点收藏 <span class="count" id="nav-favorite">0</span></button>
+  <button class="nav-item" data-view="notes">阅读笔记 <span class="count" id="nav-notes">0</span></button>
+ </nav>
+ <h3 class="menu-label">研究主题</h3><div id="sidebar-topics" class="sidebar-topics"></div>
+ <div class="menu-stats" aria-label="真实阅读记录统计"><span><b id="stat-papers">0</b> 已读论文</span><span><b id="stat-topics">0</b> 主题</span><span><b id="stat-notes">0</b> 笔记</span></div>
+ <div class="menu-utilities"><button id="motion-toggle" aria-pressed="false">开启自动轮播 <span>→</span></button><button id="refresh">刷新 GitHub 论文 <span>↻</span></button><button id="help-open">使用指南 <span>?</span></button><a id="repo-link" target="_blank" rel="noopener">在 GitHub 查看书架 <span>↗</span></a></div>
+ <p class="cloud-status" id="cloud-status" role="status">正在连接 GitHub</p><div class="notice" id="notice" hidden></div>
+</dialog>
+<dialog id="library-dialog" class="catalog-dialog" aria-labelledby="library-title"><button class="close" data-close aria-label="关闭完整书架">×</button><div class="catalog-context">当前视图：<span id="view-name">全部论文</span></div>
 <section class="library-section" aria-labelledby="library-title"><div class="section-top"><div><h2 id="library-title">我的论文书架 <span id="result-count"></span></h2></div><div class="library-tools"><label class="search-wrap"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="m15 15 5 5"/></svg><input type="search" id="search" placeholder="搜索论文、作者、笔记…" aria-label="搜索论文、作者、笔记"><kbd>/</kbd></label><label class="sr-only" for="sort">排序方式</label><select id="sort"><option value="read">最近阅读</option><option value="year">发表年份</option><option value="title">标题 A–Z</option></select></div></div>
 <div class="filter-row"><div class="chips" id="filters" aria-label="研究主题筛选"></div><div class="layout-toggle" aria-label="显示方式"><button class="active" id="grid-view" aria-label="卡片视图" aria-pressed="true">▦</button><button id="list-view" aria-label="列表视图" aria-pressed="false"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></div></div>
-<div class="notice" id="notice" hidden></div><div class="demo-banner" id="demo-banner" hidden><span><strong>先逛逛示例书架</strong>　以下为演示内容，不计入你的阅读记录。</span><button data-open-add>添加我的第一篇论文 ↗</button></div>
+<div class="demo-banner" id="demo-banner" hidden><span><strong>先逛逛示例书架</strong>　以下为演示内容，不计入你的阅读记录。</span><button data-open-add>添加我的第一篇论文 ↗</button></div>
 <div id="papers" class="paper-grid" aria-live="polite"></div>
 <div class="empty" id="empty" hidden><span>⌕</span><h3>还没有找到这篇论文</h3><p>换个关键词，或者清除筛选再看看。</p><button class="secondary" id="clear-filters">清除筛选</button></div>
 </section>
-<footer><span><span class="footer-mark">pl.</span> 收藏论文，积累自己的想法。</span><span>BUILT FOR CURIOSITY <span class="footer-dot">·</span> HOSTED ON GITHUB PAGES</span></footer>
-</main></div>
+</dialog>
 <dialog id="detail-dialog"><button class="close" data-close aria-label="关闭论文详情">×</button><div id="detail-content"></div></dialog>
 <dialog id="add-dialog"><button class="close" data-close aria-label="关闭添加论文">×</button><h2>留住一篇好论文。</h2><p class="dialog-intro">填写阅读记录，然后在 GitHub 确认提交。记录会同步到这张书架。</p><form id="add-form"><label>论文标题 <span>*</span><input name="title" required maxlength="250" placeholder="论文的原始标题"></label><div class="form-row"><label>作者<input name="authors" maxlength="200" placeholder="例如：Smith et al."></label><label>发表年份<input name="year" type="number" min="1600" max="2100" placeholder="2025"></label></div><div class="form-row"><label>期刊 / 会议<input name="venue" maxlength="120" placeholder="例如：Nature Neuroscience"></label><label>研究主题<input name="topic" required maxlength="60" placeholder="例如：事件记忆"></label></div><label>原文链接 / DOI 链接<input name="url" type="url" placeholder="https://doi.org/…"></label><label>一句话收获<input name="summary" maxlength="400" placeholder="这篇论文给你最重要的启发是什么？"></label><label>阅读笔记<textarea name="notes" rows="4" maxlength="5000" placeholder="研究问题、方法、结论，以及你自己的想法…"></textarea></label><div class="form-row"><label>阅读日期<input name="readDate" type="date" required></label><label class="check-label"><input name="favorite" type="checkbox"> 标为重点收藏</label></div><p class="form-hint">公开书架：提交的文献与笔记将公开显示。表单草稿暂存在此设备；在 GitHub 提交后跨设备可见。支持保存文献信息及原文链接。</p><p class="form-error" id="form-error" role="alert"></p><button type="submit" class="primary full">继续到 GitHub 提交 ↗</button><a id="submit-link" class="submit-link" target="_blank" rel="noopener" hidden>已生成记录，点击前往 GitHub；提交后回到这里刷新 ↗</a></form></dialog>
-<dialog id="help-dialog"><button class="close" data-close aria-label="关闭使用指南">×</button><h2>你的书架，存在 GitHub。</h2><div class="guide-step"><div><h3>添加读过的论文</h3><p>点击「添加论文」，填写标题、主题与笔记，继续到 GitHub 点击 Create / Submit new issue 确认。需要登录仓库所有者 Co1dog 账号。</p></div></div><div class="guide-step"><div><h3>回到这里，再次找到它</h3><p>提交后点击右上角刷新。搜索覆盖标题、作者、期刊、主题和笔记，主题标签可以组合筛选。</p></div></div><div class="guide-step"><div><h3>随时补充想法</h3><p>在论文详情点击「在 GitHub 编辑」，修改 JSON 中的笔记或重点收藏标记，保留格式。关闭对应 Issue 即可从书架移除；重新打开即可恢复。</p></div></div><p class="form-hint">GitHub Pages 托管页面，GitHub Issues 保存记录；页面只展示仓库所有者创建的记录。正文笔记按纯文本显示。网页不上传论文 PDF，原文通过链接打开。</p><button id="export" class="secondary full">↓ 导出我的论文记录（JSON）</button></dialog>
+<dialog id="help-dialog"><button class="close" data-close aria-label="关闭使用指南">×</button><h2>你的书架，存在 GitHub。</h2><div class="guide-step"><div><h3>添加读过的论文</h3><p>在功能菜单中点击「添加论文」，填写标题、主题与笔记，继续到 GitHub 点击 Create / Submit new issue 确认。需要登录仓库所有者 Co1dog 账号。</p></div></div><div class="guide-step"><div><h3>回到这里，再次找到它</h3><p>提交后打开右上角功能菜单，点击「刷新 GitHub 论文」。搜索覆盖标题、作者、期刊、主题和笔记，主题标签可以组合筛选。</p></div></div><div class="guide-step"><div><h3>随时补充想法</h3><p>在论文详情点击「在 GitHub 编辑」，修改 JSON 中的笔记或重点收藏标记，保留格式。关闭对应 Issue 即可从书架移除；重新打开即可恢复。</p></div></div><p class="form-hint">GitHub Pages 托管页面，GitHub Issues 保存记录；页面只展示仓库所有者创建的记录。正文笔记按纯文本显示。网页不上传论文 PDF，原文通过链接打开。</p><button id="export" class="secondary full">↓ 导出我的论文记录（JSON）</button></dialog>
 <div id="toast" role="status" class="toast" hidden></div>
 </body></html>

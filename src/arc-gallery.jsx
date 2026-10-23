@@ -13,19 +13,21 @@ function PaperFigure({variant}) {
  </svg>;
 }
 function PaperCover({paper,index,demo,active}){
- return <div className={`paper-cover cover-${index%4}${active?' is-current':''}`}>
+ return <div className={`paper-volume cover-${index%4}${active?' is-current':''}`}>
+ <div className="book-back" aria-hidden="true"/><div className="book-spine" aria-hidden="true"><span>Paper Library</span></div><div className="book-pages" aria-hidden="true"/><div className="book-pages-top" aria-hidden="true"/>
+ <div className="paper-cover">
   <div className="cover-imprint"><span>Paper Library</span><span>{demo?'示例':paper.year||'文献'}</span></div>
   <span className="cover-topic">{paper.topic}</span>
   <div className="cover-title">{paper.title}</div>
   <div className="cover-authors">{paper.authors||'作者待补充'}</div>
   <PaperFigure variant={index}/>
   <div className="cover-foot"><span>{demo?'演示文献卡片':paper.venue||'我的阅读记录'}</span><span>{paper.favorite?'重点收藏':'阅读收藏'}</span></div>
- </div>;
+ </div></div>;
 }
 class GalleryBoundary extends Component {
  constructor(props){super(props);this.state={failed:false};}
  static getDerivedStateFromError(){return {failed:true};}
- render(){return this.state.failed?<p className="arc-fallback">轮播暂时无法显示。<a href="#library-title">继续浏览完整书架 →</a></p>:this.props.children;}
+ render(){return this.state.failed?<p className="arc-fallback">轮播暂时无法显示。<button data-open-library>继续浏览完整书架 →</button></p>:this.props.children;}
 }
 function ArcIsland(){
  const [payload,setPayload]=useState(null),[active,setActive]=useState(0),[playing,setPlaying]=useState(false);
@@ -36,21 +38,29 @@ function ArcIsland(){
   window.dispatchEvent(new Event('paper-library:carousel-ready'));
   return ()=>window.removeEventListener('paper-library:update',receive);
  },[]);
+ useEffect(()=>{
+  const toggle=()=>setPlaying(value=>!value);
+  window.addEventListener('paper-library:toggle-motion',toggle);
+  return ()=>window.removeEventListener('paper-library:toggle-motion',toggle);
+ },[]);
+ useEffect(()=>{
+  const button=document.getElementById('motion-toggle');
+  if(button){button.setAttribute('aria-pressed',String(playing));button.innerHTML=(playing?'暂停自动轮播':'开启自动轮播')+' <span>→</span>';}
+ },[playing]);
  const selection=useMemo(()=>{
   if(!payload)return [];
-  const sorted=[...payload.papers].sort((a,b)=>Number(b.favorite)-Number(a.favorite)||b.readDate.localeCompare(a.readDate));
-  return sorted.slice(0,8).map(p=>({...p,alt:p.title}));
+  return payload.papers.map(p=>({...p,alt:p.title}));
  },[payload]);
  const current=selection[Math.min(active,selection.length-1)];
  const openPaper=paper=>window.dispatchEvent(new CustomEvent('paper-library:open',{detail:{id:paper.id}}));
- if(!payload)return <p className="arc-fallback">正在整理你的书架… <a href="#library-title">查看全部论文 →</a></p>;
- if(!current)return <p className="arc-fallback">轮播里还没有论文。<a href="#library-title">从完整书架开始 →</a></p>;
+ if(!payload)return <p className="arc-fallback">正在整理你的书架… <button data-open-library>查看全部论文 →</button></p>;
+ if(!current)return <div className="arc-no-results"><h2>书架里暂时没有匹配的论文。</h2><button className="secondary" data-open-library>调整搜索与筛选 →</button></div>;
  return <>
   <div className="arc-stage-wrap">
-   <DepthCarousel key={JSON.stringify(selection)} items={selection} cardWidth={240} cardHeight={312} radius={5} depth={220} spread={190} tilt={17} perspective={1500} visibleCards={2.4} falloff={.075} blur={0} duration={780} autoplay={playing} autoplayDelay={5200} loop showControls showIndicators onChange={index=>setActive(index)} onOpen={openPaper} renderCard={(paper,index,isActive)=><PaperCover paper={paper} index={index} demo={payload.isDemo} active={isActive}/>}/>
+   <DepthCarousel key={JSON.stringify(selection)} items={selection} cardWidth={268} cardHeight={366} radius={3} depth={440} spread={270} tilt={48} perspective={1000} visibleCards={2.25} falloff={.07} blur={0} duration={1150} ease="back.out(1.1)" autoplay={playing} autoplayDelay={5600} loop showControls showIndicators onChange={index=>setActive(index)} onOpen={openPaper} renderCard={(paper,index,isActive)=><PaperCover paper={paper} index={index} demo={payload.isDemo} active={isActive}/>}/>
   </div>
-  <div className="arc-bottom"><div className="arc-caption" aria-live={playing?'off':'polite'} aria-atomic="true"><span>{payload.isDemo?'示例书架':current.favorite?'重点收藏':'最近阅读'} · {active+1} / {selection.length}</span><h2>{current.title}</h2><p>{current.summary||current.topic}</p></div><button className="arc-open" onClick={()=>openPaper(current)}>打开{payload.isDemo?'示例笔记':'阅读笔记'} <span aria-hidden="true">↗</span></button></div>
-  <div className="arc-utility"><span>拖动卡片或使用 ← → 切换</span><button className="arc-play" onClick={()=>setPlaying(value=>!value)} aria-pressed={playing}>{playing?'暂停自动轮播':'开启自动轮播'}</button><a href="#library-title">查看完整书架 ↓</a></div>
+  <div className="arc-bottom"><div className="arc-caption" aria-live={playing?'off':'polite'} aria-atomic="true"><span>{payload.isDemo?'示例文献':current.topic} · {active+1} / {selection.length}</span><h2>{current.title}</h2><p>{current.summary||current.topic}</p></div><button className="arc-open" onClick={()=>openPaper(current)}>打开{payload.isDemo?'示例笔记':'阅读笔记'} <span aria-hidden="true">↗</span></button></div>
+  <div className="arc-utility"><span>拖动书架，或按 ← → 翻阅</span><button data-open-library>浏览全部论文 ↗</button></div>
  </>;
 }
 const host=document.getElementById('arc-gallery');
