@@ -1,0 +1,19 @@
+{
+  "family": "Anthropic Serif",
+  "source_page": "https://claude.com/",
+  "retrieved": "2026-10-23",
+  "files": [
+    {
+      "file": "anthropic-serif-roman.woff2",
+      "source": "https://claude.com/_next/static/media/AnthropicSerif_Roman_Web-s.p.c28786b4.woff2",
+      "bytes": 175356,
+      "sha256": "e96fe97bb7ba2190a9a227d27380e0c79894408bfc6acea5a511774d93a16f69"
+    },
+    {
+      "file": "anthropic-serif-italic.woff2",
+      "source": "https://claude.com/_next/static/media/AnthropicSerif_Italic_Web-s.p.43888cc6.woff2",
+      "bytes": 166724,
+      "sha256": "7f61e32b5941ad6e5699aeb3e03390a43e5f04f3bff6a5853bed08c802596f83"
+    }
+  ]
+}

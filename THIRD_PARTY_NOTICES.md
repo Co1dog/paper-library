@@ -13,3 +13,8 @@ React and React DOM are MIT licensed. GSAP is distributed under its Standard Lic
 https://gsap.com/community/standard-license/
 
 The bundled production JavaScript retains license comments in its adjacent `.LEGAL.txt` file.
+
+## Website typefaces
+
+- Anthropic Serif: official Roman and Italic webfont files observed on https://claude.com/ on 2026-10-23, hosted unchanged for the site owner’s explicitly requested typography. Source URLs and SHA256 are retained in assets/fonts/provenance.json. Anthropic Serif is Anthropic’s brand typeface; no open-source license is asserted for these files.
+- Noto Serif SC: Google Fonts / Noto CJK. Source: https://github.com/notofonts/noto-cjk . Distributed under the SIL Open Font License 1.1; served through Google Fonts.
