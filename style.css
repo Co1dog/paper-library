@@ -18,3 +18,16 @@ dialog{border:0;padding:40px;max-width:680px;width:calc(100% - 32px);max-height:
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 .shelf-footer>span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.shelf-footer>span:nth-child(2){flex-shrink:0}
 kbd{font-family:var(--serif)}
+
+/* Exhibition shell: the utility UI stays behind the menu. */
+body{height:100svh;min-height:0;overflow:hidden;display:block}
+:root{--page-pad:clamp(20px,2vw,32px)}
+.topbar{position:fixed;inset:0 0 auto;z-index:30;height:80px;padding:0 var(--page-pad);pointer-events:none}
+.topbar>a,.topbar>button{pointer-events:auto}
+main{height:100svh;min-height:0;padding:0;display:block;overflow:hidden}
+.arc-hero,#arc-gallery{height:100%;min-height:0;width:100%;position:relative}
+.menu-display{display:flex;gap:22px;margin:20px 0 22px;font-size:20px}
+.menu-display button{min-height:44px;padding:4px 0;color:var(--muted)}
+.menu-display button[aria-pressed=true]{color:var(--ink);text-decoration:underline;text-underline-offset:5px}
+.menu-utilities button:disabled{color:var(--muted);cursor:default}
+@media(max-width:640px){.topbar{height:72px}.brand{font-size:17px}.menu-display{margin-top:15px}}
