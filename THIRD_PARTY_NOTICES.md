@@ -22,3 +22,5 @@ The bundled production JavaScript retains license comments in its adjacent `.LEG
 ## Wheel interaction reference
 
 Motion reference: https://crl-2026.webflow.io/library (inspected 2026-10-24). The wheel input, circular orbit, inertia and snapping are independently implemented with DOM transforms and GSAP. No reference site images, copy, WebGL shaders or application bundle are included.
+
+The exhibition layout, blended title treatment, and Wheel / List interaction refer to the same user-supplied CRL Library page. Implementation and paper-cover artwork are project code; no reference-site images, branding, text collection, or production bundle are included.
