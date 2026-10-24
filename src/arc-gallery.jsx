@@ -1,5 +1,6 @@
-import {Component, useEffect, useMemo, useState} from 'react';
+import {Component, useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
+import gsap from 'gsap';
 import DepthCarousel from './components/DepthCarousel.jsx';
 import './arc-gallery.css';
 
@@ -31,6 +32,12 @@ class GalleryBoundary extends Component {
 }
 function ArcIsland(){
  const [payload,setPayload]=useState(null),[active,setActive]=useState(0),[playing,setPlaying]=useState(false);
+ const captionRef=useRef(null);
+ useEffect(()=>{
+  if(!captionRef.current||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const context=gsap.context(()=>{gsap.fromTo(captionRef.current.children,{y:14,autoAlpha:0},{y:0,autoAlpha:1,duration:.42,stagger:.035,ease:'power3.out'});},captionRef);
+  return ()=>context.revert();
+ },[active,payload]);
  useEffect(()=>{
   let last='';
   const receive=event=>{const value=event.detail;const signature=JSON.stringify(value);if(signature===last)return;last=signature;setPayload(value);setActive(0);};
@@ -57,10 +64,10 @@ function ArcIsland(){
  if(!current)return <div className="arc-no-results"><h2>书架里暂时没有匹配的论文。</h2><button className="secondary" data-open-library>调整搜索与筛选 →</button></div>;
  return <>
   <div className="arc-stage-wrap">
-   <DepthCarousel key={JSON.stringify(selection)} items={selection} cardWidth={268} cardHeight={366} radius={3} depth={440} spread={270} tilt={48} perspective={1000} visibleCards={2.25} falloff={.07} blur={0} duration={1150} ease="back.out(1.1)" autoplay={playing} autoplayDelay={5600} loop showControls showIndicators onChange={index=>setActive(index)} onOpen={openPaper} renderCard={(paper,index,isActive)=><PaperCover paper={paper} index={index} demo={payload.isDemo} active={isActive}/>}/>
+   <DepthCarousel key={JSON.stringify(selection)} items={selection} cardWidth={268} cardHeight={366} radius={3} perspective={1800} duration={800} autoplay={playing} autoplayDelay={5600} showControls showIndicators onChange={index=>setActive(index)} onOpen={openPaper} renderCard={(paper,index,isActive)=><PaperCover paper={paper} index={index} demo={payload.isDemo} active={isActive}/>}/>
   </div>
-  <div className="arc-bottom"><div className="arc-caption" aria-live={playing?'off':'polite'} aria-atomic="true"><span>{payload.isDemo?'示例文献':current.topic} · {active+1} / {selection.length}</span><h2>{current.title}</h2><p>{current.summary||current.topic}</p></div><button className="arc-open" onClick={()=>openPaper(current)}>打开{payload.isDemo?'示例笔记':'阅读笔记'} <span aria-hidden="true">↗</span></button></div>
-  <div className="arc-utility"><span>拖动书架，或按 ← → 翻阅</span><button data-open-library>浏览全部论文 ↗</button></div>
+  <div className="arc-bottom"><div className="arc-caption" ref={captionRef} aria-live={playing?'off':'polite'} aria-atomic="true"><span>{payload.isDemo?'示例文献':current.topic} · {active+1} / {selection.length}</span><h2>{current.title}</h2><p>{current.summary||current.topic}</p></div><button className="arc-open" onClick={()=>openPaper(current)}>打开{payload.isDemo?'示例笔记':'阅读笔记'} <span aria-hidden="true">↗</span></button></div>
+  <div className="arc-utility"><span>滚轮翻阅 · 拖动 / ← →</span><button data-open-library>浏览全部论文 ↗</button></div>
  </>;
 }
 const host=document.getElementById('arc-gallery');
