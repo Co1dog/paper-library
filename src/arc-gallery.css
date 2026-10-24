@@ -65,6 +65,5 @@
 .is-transitioning .list-preview{visibility:hidden}
 .is-transitioning .depth-carousel__card[tabindex="0"]{visibility:hidden!important}
 
-/* Keep the Wheel composition fixed; background titles recede in dark gray. */
-.exhibition--wheel .exhibition-title{color:#303030;mix-blend-mode:normal;z-index:1}
-.exhibition-next{color:#303030}
+/* Preserve the original composition and scale each printed cover down by 10%. */
+.paper-volume{transform:scale(.9);transform-origin:center}
