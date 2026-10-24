@@ -7,27 +7,28 @@
 <title>Paper Library · 我的论文书架</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="./assets/fonts/anthropic-serif-roman.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css?v=wheel-20261024"><link rel="stylesheet" href="./assets/arc-gallery.css?v=wheel-20261024">
-<script src="./app.js" defer></script><script type="module" src="./assets/arc-gallery.js?v=wheel-20261024"></script>
+<link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css?v=exhibition-20261024"><link rel="stylesheet" href="./assets/arc-gallery.css?v=exhibition-20261024">
+<script src="./app.js?v=exhibition-20261024" defer></script><script type="module" src="./assets/arc-gallery.js?v=exhibition-20261024"></script>
 </head>
 <body>
 <a class="skip" href="#main">跳到论文书架</a>
 <header class="topbar">
  <a class="brand" href="./" aria-label="Paper Library 首页"><span class="brand-mark">pl.</span><span>paper library</span></a>
- <span class="workspace-name">Co1dog 的阅读收藏</span>
+
  <button id="menu-toggle" class="menu-toggle" aria-label="打开功能菜单" aria-haspopup="dialog" aria-controls="menu-dialog" aria-expanded="false"><span></span><span></span><span></span></button>
 </header>
 <main id="main">
  <section class="arc-hero" aria-labelledby="arc-title">
-  <div class="arc-heading"><h1 id="arc-title">我的论文书架</h1><p>读过的论文，值得再次翻开。</p></div>
+  <h1 id="arc-title" class="sr-only">我的论文书架</h1>
   <div id="arc-gallery"><p class="arc-fallback">正在整理你的书架… <button data-open-library>查看全部论文 →</button></p></div>
   <noscript><p><a href="https://github.com/Co1dog/paper-library/issues">在 GitHub 查看论文记录 →</a></p></noscript>
  </section>
 </main>
-<footer class="shelf-footer"><span id="shelf-scope">全部论文</span><span id="shelf-state">正在连接 GitHub</span><span>Paper Library / 阅读收藏</span></footer>
+<footer class="shelf-footer" hidden><span id="shelf-scope">全部论文</span><span id="shelf-state">正在连接 GitHub</span><span>Paper Library / 阅读收藏</span></footer>
 <dialog id="menu-dialog" class="menu-drawer" aria-labelledby="menu-title">
  <button class="close" data-close aria-label="关闭功能菜单">×</button><h2 id="menu-title">书架功能</h2>
  <p class="drawer-intro">Co1dog 的研究空间</p>
+ <div class="menu-display" role="group" aria-label="切换展示方式"><button data-gallery-view="wheel" aria-pressed="true">Wheel</button><button data-gallery-view="list" aria-pressed="false">List</button></div>
  <div class="menu-actions"><button class="primary full" data-open-add>＋ 添加论文</button><button class="secondary full" data-open-library>搜索与筛选论文 <span>↗</span></button></div>
  <nav class="drawer-nav" aria-label="书架导航">
   <button class="nav-item active" data-view="all">全部论文 <span class="count" id="nav-all">0</span></button>
@@ -37,7 +38,7 @@
  </nav>
  <h3 class="menu-label">研究主题</h3><div id="sidebar-topics" class="sidebar-topics"></div>
  <div class="menu-stats" aria-label="真实阅读记录统计"><span><b id="stat-papers">0</b> 已读论文</span><span><b id="stat-topics">0</b> 主题</span><span><b id="stat-notes">0</b> 笔记</span></div>
- <div class="menu-utilities"><button id="motion-toggle" aria-pressed="false">开启自动轮播 <span>→</span></button><button id="refresh">刷新 GitHub 论文 <span>↻</span></button><button id="help-open">使用指南 <span>?</span></button><a id="repo-link" target="_blank" rel="noopener">在 GitHub 查看书架 <span>↗</span></a></div>
+ <div class="menu-utilities"><button id="selection-open">查看当前论文与笔记 <span>↗</span></button><button id="motion-toggle" aria-pressed="false">开启自动轮播 <span>→</span></button><button id="refresh">刷新 GitHub 论文 <span>↻</span></button><button id="help-open">使用指南 <span>?</span></button><a id="repo-link" target="_blank" rel="noopener">在 GitHub 查看书架 <span>↗</span></a></div>
  <p class="cloud-status" id="cloud-status" role="status">正在连接 GitHub</p><div class="notice" id="notice" hidden></div>
 </dialog>
 <dialog id="library-dialog" class="catalog-dialog" aria-labelledby="library-title"><button class="close" data-close aria-label="关闭完整书架">×</button><div class="catalog-context">当前视图：<span id="view-name">全部论文</span></div>
