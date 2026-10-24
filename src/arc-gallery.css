@@ -8,3 +8,7 @@
 /* Keep navigation next to the volumes, including tall portrait tablets. */
 .arc-stage-wrap .depth-carousel__arrow,.arc-stage-wrap .depth-carousel__dots{bottom:auto;top:calc(45% + 218px * var(--dc-scale,1))}
 .arc-caption h2{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}.arc-caption p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+
+/* Wheel motion: a circular fan, with direct scroll input and stable readable paper faces. */
+.wheel-carousel{touch-action:none}.wheel-carousel .depth-carousel__stage{transform:none}.wheel-carousel .depth-carousel__card{will-change:transform,opacity}.arc-stage-wrap .wheel-carousel{perspective-origin:50% 45%}.arc-stage-wrap .depth-carousel__dots{max-width:84px}.arc-stage-wrap .depth-carousel__arrow{font-size:22px}.arc-caption>span{display:block}
+@media(prefers-reduced-motion:reduce){.wheel-carousel .depth-carousel__card{will-change:auto}}
