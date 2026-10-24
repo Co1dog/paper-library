@@ -8,17 +8,17 @@ const clamp=(value,min,max)=>Math.min(Math.max(value,min),max);
 const wrap=(value,count)=>((value%count)+count)%count;
 
 export default function DepthCarousel({items=[],cardWidth=268,cardHeight=366,radius=3,perspective=1600,
- duration=760,autoplay=false,autoplayDelay=5600,onChange,onOpen,renderCard,className='',showControls=true,showIndicators=true}){
+ duration=760,initialIndex=0,autoplay=false,autoplayDelay=5600,onChange,onOpen,renderCard,className='',showControls=true,showIndicators=true}){
  const data=useMemo(()=>items.map(item=>typeof item==='string'?{image:item,alt:''}:item),[items]);
  const count=data.length;
  const rootRef=useRef(null),stageRef=useRef(null),cardsRef=useRef([]),shadowsRef=useRef([]);
- const posRef=useRef(0),targetRef=useRef(0),activeRef=useRef(0),pullRef=useRef(0),scaleRef=useRef(1);
+ const posRef=useRef(initialIndex),targetRef=useRef(initialIndex),activeRef=useRef(initialIndex),pullRef=useRef(0),scaleRef=useRef(1);
  const sizeRef=useRef({width:900,height:600});
- const playhead=useRef({p:0}),driveRef=useRef(null),dragRef=useRef(null),wheelTimer=useRef(null),clickTimer=useRef(null);
+ const playhead=useRef({p:initialIndex}),driveRef=useRef(null),dragRef=useRef(null),wheelTimer=useRef(null),clickTimer=useRef(null);
  const reducedRef=useRef(false),suppressClick=useRef(false),intersecting=useRef(true);
  const changeRef=useRef(onChange),openRef=useRef(onOpen);
  changeRef.current=onChange;openRef.current=onOpen;
- const [active,setActive]=useState(0);
+ const [active,setActive]=useState(initialIndex);
 
  const layout=useCallback(position=>{
   if(!count||!rootRef.current)return;
@@ -143,7 +143,7 @@ export default function DepthCarousel({items=[],cardWidth=268,cardHeight=366,rad
  },[moveTo]);
  useEffect(()=>{
   if(!autoplay||count<2)return;
-  const timer=setInterval(()=>{if(!reducedRef.current&&!document.hidden&&intersecting.current&&!dragRef.current&&!document.querySelector('dialog[open]')&&!rootRef.current?.matches(':hover')&&!rootRef.current?.contains(document.activeElement))navigate(1);},Math.max(autoplayDelay,1200));
+  const timer=setInterval(()=>{if(!reducedRef.current&&!document.hidden&&intersecting.current&&!dragRef.current&&!document.querySelector('dialog[open]')&&!cardsRef.current.some(card=>card?.matches(':hover'))&&!rootRef.current?.contains(document.activeElement))navigate(1);},Math.max(autoplayDelay,1200));
   return ()=>clearInterval(timer);
  },[autoplay,autoplayDelay,count,navigate]);
  useEffect(()=>()=>{clearTimeout(wheelTimer.current);clearTimeout(clickTimer.current);},[]);
