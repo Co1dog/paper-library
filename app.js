@@ -162,3 +162,7 @@ $('export').addEventListener('click',()=>{
 $('repo-link').href=REPO_URL;
 document.addEventListener('keydown',event=>{if(event.key==='/'&&!['INPUT','TEXTAREA','SELECT'].includes(event.target.tagName)&&!document.querySelector('dialog[open]')){event.preventDefault();openLibrary();}});
 render();loadPapers();
+
+// The exhibition and utility drawer share one display mode and current selection.
+document.querySelectorAll('[data-gallery-view]').forEach(button=>button.addEventListener('click',()=>{window.dispatchEvent(new CustomEvent('paper-library:display',{detail:button.dataset.galleryView}));$('menu-dialog').close();}));
+$('selection-open').addEventListener('click',()=>window.dispatchEvent(new Event('paper-library:open-current')));
