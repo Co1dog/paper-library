@@ -64,3 +64,7 @@
 .cover-flight{position:fixed;width:248px;height:340px;transform-origin:top left;pointer-events:none;z-index:7;will-change:transform}
 .is-transitioning .list-preview{visibility:hidden}
 .is-transitioning .depth-carousel__card[tabindex="0"]{visibility:hidden!important}
+
+/* Keep the Wheel composition fixed; background titles recede in dark gray. */
+.exhibition--wheel .exhibition-title{color:#303030;mix-blend-mode:normal;z-index:1}
+.exhibition-next{color:#303030}
