@@ -67,3 +67,6 @@
 
 /* Preserve the original composition and scale each printed cover down by 10%. */
 .paper-volume{transform:scale(.9);transform-origin:center}
+
+/* Only visible, moving volumes need compositor hints. */
+.wheel-carousel .depth-carousel__card[aria-hidden="true"]{will-change:auto}
