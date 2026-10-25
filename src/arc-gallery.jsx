@@ -1,4 +1,4 @@
-import {Component, useEffect, useMemo, useRef, useState} from 'react';
+import {Component, memo, useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import gsap from 'gsap';
 import DepthCarousel from './components/DepthCarousel.jsx';
@@ -13,7 +13,7 @@ function PaperFigure({variant}) {
    <g {...common}><path d="M30 62 67 22 103 56 143 17 175 50M30 62 103 56M67 22 143 17M67 22 88 75 143 17" opacity=".7"/>{[[30,62],[67,22],[103,56],[143,17],[175,50],[88,75]].map(([cx,cy])=><circle key={cx} cx={cx} cy={cy} r="5" fill="var(--cover-ground)"/>)}</g>}
  </svg>;
 }
-function PaperCover({paper,index,demo,active}){
+const PaperCover=memo(function PaperCover({paper,index,demo,active}){
  return <div className={`paper-volume cover-${index%4}${active?' is-current':''}`}>
  <div className="book-back" aria-hidden="true"/><div className="book-spine" aria-hidden="true"><span>Paper Library</span></div><div className="book-pages" aria-hidden="true"/><div className="book-pages-top" aria-hidden="true"/>
  <div className="paper-cover">
@@ -24,7 +24,7 @@ function PaperCover({paper,index,demo,active}){
   <PaperFigure variant={index}/>
   <div className="cover-foot"><span>{demo?'演示文献卡片':paper.venue||'我的阅读记录'}</span><span>{paper.favorite?'重点收藏':'阅读收藏'}</span></div>
  </div></div>;
-}
+});
 class GalleryBoundary extends Component {
  constructor(props){super(props);this.state={failed:false};}
  static getDerivedStateFromError(){return {failed:true};}
@@ -37,6 +37,7 @@ function ArcIsland(){
  const exhibitionRef=useRef(null),flightRef=useRef(null),switchModeRef=useRef(null);
  const [flight,setFlight]=useState(null);
  const selection=useMemo(()=>payload?payload.papers.map(p=>({...p,alt:p.title})):[],[payload]);
+ const selectionKey=useMemo(()=>JSON.stringify(selection),[selection]);
  const selected=Math.min(active,Math.max(0,selection.length-1)),current=selection[selected];
  currentRef.current=current;
  const switchMode=next=>{
@@ -104,7 +105,7 @@ function ArcIsland(){
   {!payload?<p className="arc-fallback">正在整理你的书架…</p>:!current?<div className="arc-no-results"><h2>没有匹配的论文</h2><button data-open-library>调整搜索与筛选 →</button></div>:<>
    <div className="exhibition-title" aria-live={playing?'off':'polite'} aria-atomic="true" style={{'--title-scale':titleScale}}><h2 ref={titleRef}>{current.title}</h2></div>
    {mode==='wheel'?<>
-    <div className="arc-stage-wrap"><DepthCarousel key={JSON.stringify(selection)} items={selection} initialIndex={selected} cardWidth={248} cardHeight={340} radius={2} perspective={1800} duration={800} autoplay={playing} autoplayDelay={5600} showControls={false} showIndicators={false} onChange={index=>setActive(index)} onOpen={openPaper} renderCard={(paper,index,isActive)=><PaperCover paper={paper} index={index} demo={payload.isDemo} active={isActive}/>}/></div>
+    <div className="arc-stage-wrap"><DepthCarousel key={selectionKey} items={selection} initialIndex={selected} cardWidth={248} cardHeight={340} radius={2} perspective={1800} duration={800} autoplay={playing} autoplayDelay={5600} showControls={false} showIndicators={false} showShadows={false} onChange={index=>setActive(index)} onOpen={openPaper} renderCard={(paper,index,isActive)=><PaperCover paper={paper} index={index} demo={payload.isDemo} active={isActive}/>}/></div>
     {selection.length>1&&<div className="exhibition-next" aria-hidden="true">{next.title}</div>}
    </>:<>
     <div className="exhibition-list" role="region" aria-label="论文标题目录"><ol>{selection.map((paper,index)=><li key={paper.id}><button ref={node=>{rowsRef.current[index]=node;}} className={selected===index?'is-current':''} aria-current={selected===index?'true':undefined} aria-label={`查看 ${paper.title}`} onPointerEnter={event=>{if(event.pointerType==='mouse')setActive(index);}} onFocus={()=>setActive(index)} onKeyDown={event=>focusRow(event,index)} onClick={()=>openPaper(paper)}><span className="list-position" aria-hidden="true">{index+1}</span><span className="list-title">{paper.title}</span></button></li>)}</ol></div>
