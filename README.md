@@ -9,7 +9,7 @@
 - 标题、作者、期刊、主题、阅读笔记全文检索
 - 研究主题筛选，卡片 / 列表视图
 - 最近 30 天、重点收藏、有笔记的论文
-- 原文链接、笔记详情、JSON 导出
+- 原文 PDF、独立解读页、真实首页封面、笔记详情与 JSON 导出
 - 桌面一屏横向书架，手机横滑轮播；右上角三横线菜单收纳辅助功能
 - 无真实记录时展示明确标注的示例卡片，统计只计算真实记录
 
@@ -38,7 +38,7 @@
 - GitHub 公共 API 有读取速率限制。连接失败时网页会显示明确提示；稍后刷新即可。
 - 每次最多读取 1000 条开放 Issue，超过会提示归档，不会静默遗漏。
 - 导出只包含真实记录，不包括演示卡片。
-- 保存文献信息、笔记和原文链接；本版本不上传或托管 PDF 文件。
+- 文献信息和笔记通过 Issues 保存；PDF、独立解读页和封面可放入仓库，再通过记录中的 URL 关联。添加表单不直接上传文件。
 - 英文统一使用随站点托管的 Anthropic Serif（含正体与斜体），中文使用 Noto Serif SC（宋体，Google Fonts）。加载失败时回退到系统宋体 / 衬线字体。
 
 ## 页面发布
@@ -64,6 +64,9 @@
   "venue": "期刊或会议",
   "topic": "研究主题",
   "url": "https://doi.org/...",
+  "pdfURL": "https://co1dog.github.io/paper-library/papers/example/original.pdf",
+  "readingURL": "https://co1dog.github.io/paper-library/papers/example/reading.html",
+  "coverURL": "https://co1dog.github.io/paper-library/papers/example/cover.png",
   "summary": "一句话收获",
   "notes": "阅读笔记",
   "readDate": "2026-10-23",
@@ -84,7 +87,7 @@
 - 自动轮播默认关闭，可在功能菜单开启；手动开启后在悬停、键盘焦点、页面隐藏、轮播离屏或笔记弹窗开启时暂停。
 - 尊重系统 prefers-reduced-motion，关闭自动与位移动效。
 - 轮播与普通列表使用同一份 GitHub 数据。没有真实论文时清楚标注示例。
-- 文献卡片为标题与主题生成的排版封面，不是论文 PDF 首页。
+- 有 `coverURL` 的论文使用真实封面，保持完整页面比例；未提供图片或加载失败时回退到标题与主题生成的排版封面。
 
 主体页面仍使用 HTML / CSS / JavaScript；立体轮播是独立 React island，采用 React Bits DepthCarousel + GSAP。生产 bundle 已提交到 assets/，GitHub Pages 直接发布根目录。
 
@@ -108,6 +111,12 @@ pnpm run build
 - 示例封面明确标注“示例”，真实阅读记录仍单独统计。
 
 视觉构图参考用户提供的 [CRL Library](https://crl-2026.webflow.io/library)，以独立的 React / CSS / GSAP 实现适配论文书架。
+
+## 论文原文与解读
+
+`papers/nau-2025/` 保存 Nau et al. (2025) 的正式版 PDF、现有中文解读和未裁切的 PDF 首页封面。原文保持原始字节，来源、许可与校验值见该目录的 README。解读作为独立阅读材料打开，保留图像、公式与标注功能。
+
+记录中的 `pdfURL`、`readingURL` 和 `coverURL` 均为可选的 HTTPS / HTTP 地址。论文详情分别提供原文 PDF、中文解读和期刊页面入口；Wheel 与 List 使用同一张封面。
 
 ## 轮盘性能
 
