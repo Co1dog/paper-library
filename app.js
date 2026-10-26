@@ -25,11 +25,11 @@ function updateStats(){
  const topics=new Set(papers.map(p=>p.topic));
  $('stat-papers').textContent=String(papers.length);
  $('stat-topics').textContent=String(topics.size);
- $('stat-notes').textContent=String(papers.filter(p=>p.notes.trim()).length);
+ $('stat-notes').textContent=String(papers.filter(p=>p.notes.trim()||p.readingURL).length);
  $('nav-all').textContent=papers.length;
  $('nav-recent').textContent=papers.filter(recentPaper).length;
  $('nav-favorite').textContent=papers.filter(p=>p.favorite).length;
- $('nav-notes').textContent=papers.filter(p=>p.notes.trim()).length;
+ $('nav-notes').textContent=papers.filter(p=>p.notes.trim()||p.readingURL).length;
 }
 function topicControls(){
  const topics=[...new Set(getSource().map(p=>p.topic))];
@@ -44,7 +44,7 @@ function render(){
  const query=$('search').value.trim().toLocaleLowerCase();
  let found=getSource().filter(p=>(!activeTopics.size||activeTopics.has(p.topic))&&(!query||[p.title,p.authors,p.venue,p.topic,p.summary,p.notes,String(p.year)].join(' ').toLocaleLowerCase().includes(query)));
  if(currentView==='favorite')found=found.filter(p=>p.favorite);
- if(currentView==='notes')found=found.filter(p=>p.notes.trim());
+ if(currentView==='notes')found=found.filter(p=>p.notes.trim()||p.readingURL);
  if(currentView==='recent')found=found.filter(recentPaper);
  const sort=$('sort').value;
  found.sort((a,b)=>sort==='year'?(b.year||0)-(a.year||0):sort==='title'?a.title.localeCompare(b.title):b.readDate.localeCompare(a.readDate));
@@ -61,15 +61,16 @@ function render(){
 }
 function detail(id){
  const p=getSource().find(x=>String(x.id)===id);if(!p)return;
- const url=safeURL(p.url),issue=safeURL(p.issueURL);
- $('detail-content').innerHTML=`<div class="detail-source">${isDemo?'示例文献':'来自我的书架'}</div><h2 class="detail-title">${escapeHTML(p.title)}</h2><div class="detail-meta">${escapeHTML(p.authors||'作者待补充')}<br>${escapeHTML(p.venue||'期刊待补充')} ${p.year?' / '+p.year:''}<br><span class="topic-pill">${escapeHTML(p.topic)}</span>　阅读于 ${escapeHTML(p.readDate)} ${p.favorite?' · 重点收藏':''}</div>${p.summary?`<div class="detail-summary">${escapeHTML(p.summary)}</div>`:''}<h3 class="notes-heading">READING NOTES / 阅读笔记</h3><div class="detail-notes">${escapeHTML(p.notes||'还没有笔记。可以在 GitHub 中补充你的想法。')}</div><div class="detail-actions">${url?`<a class="primary" href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer">打开原文 ↗</a>`:''}${issue?`<a class="secondary" href="${escapeHTML(issue)}" target="_blank" rel="noopener noreferrer">在 GitHub 编辑 ↗</a>`:''}</div>${isDemo?'<div class="detail-demo">这是设计示例，不是真实文献条目。添加你的第一篇论文后，书架会显示自己的阅读记录。</div>':''}`;
+ const url=safeURL(p.url),pdf=safeURL(p.pdfURL),reading=safeURL(p.readingURL),issue=safeURL(p.issueURL);
+ const original=pdf||url;
+ $('detail-content').innerHTML=`<div class="detail-source">${isDemo?'示例文献':'来自我的书架'}</div><h2 class="detail-title">${escapeHTML(p.title)}</h2><div class="detail-meta">${escapeHTML(p.authors||'作者待补充')}<br>${escapeHTML(p.venue||'期刊待补充')} ${p.year?' / '+p.year:''}<br><span class="topic-pill">${escapeHTML(p.topic)}</span>　阅读于 ${escapeHTML(p.readDate)} ${p.favorite?' · 重点收藏':''}</div>${p.summary?`<div class="detail-summary">${escapeHTML(p.summary)}</div>`:''}<h3 class="notes-heading">READING NOTES / 阅读笔记</h3><div class="detail-notes">${escapeHTML(p.notes||'还没有笔记。可以在 GitHub 中补充你的想法。')}</div><div class="detail-actions">${original?`<a class="primary" href="${escapeHTML(original)}" target="_blank" rel="noopener noreferrer">${pdf?'阅读原文 PDF':'打开原文'} ↗</a>`:''}${reading?`<a class="secondary" href="${escapeHTML(reading)}" target="_blank" rel="noopener noreferrer">打开中文解读 ↗</a>`:''}${pdf&&url&&pdf!==url?`<a class="secondary" href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer">期刊页面 ↗</a>`:''}${issue?`<a class="secondary" href="${escapeHTML(issue)}" target="_blank" rel="noopener noreferrer">在 GitHub 编辑 ↗</a>`:''}</div>${isDemo?'<div class="detail-demo">这是设计示例，不是真实文献条目。添加你的第一篇论文后，书架会显示自己的阅读记录。</div>':''}`;
  showDialog($('detail-dialog'));
 }
 function normalizePaper(raw,issue){
  if(!raw||typeof raw!=='object'||typeof raw.title!=='string'||!raw.title.trim()||typeof raw.topic!=='string'||!raw.topic.trim())return null;
  const text=(key,max)=>typeof raw[key]==='string'?raw[key].slice(0,max):'';
  const readDate=/^\d{4}-\d{2}-\d{2}$/.test(raw.readDate||'')&&!isNaN(Date.parse(raw.readDate))?raw.readDate:issue.created_at.slice(0,10);
- return {id:String(issue.number),title:text('title',250),topic:text('topic',60),authors:text('authors',200),venue:text('venue',120),year:Number.isInteger(raw.year)&&raw.year>=1600&&raw.year<=2100?raw.year:null,url:safeURL(raw.url),summary:text('summary',400),notes:text('notes',5000),favorite:raw.favorite===true,readDate,issueURL:issue.html_url};
+ return {id:String(issue.number),title:text('title',250),topic:text('topic',60),authors:text('authors',200),venue:text('venue',120),year:Number.isInteger(raw.year)&&raw.year>=1600&&raw.year<=2100?raw.year:null,url:safeURL(raw.url),pdfURL:safeURL(raw.pdfURL),readingURL:safeURL(raw.readingURL),coverURL:safeURL(raw.coverURL),summary:text('summary',400),notes:text('notes',5000),favorite:raw.favorite===true,readDate,issueURL:issue.html_url};
 }
 async function loadPapers(){
  if(busy)return;busy=true;$('refresh').disabled=true;$('cloud-status').classList.remove('error');$('cloud-status').textContent='◌ 正在读取 GitHub';$('notice').hidden=true;
@@ -113,7 +114,7 @@ form.addEventListener('input',()=>{try{localStorage.setItem(DRAFT_KEY,JSON.strin
 form.addEventListener('submit',event=>{
  event.preventDefault();$('form-error').textContent='';if(!form.reportValidity())return;
  const raw=draftData();
- if(raw.url&&!safeURL(raw.url)){$('form-error').textContent='原文链接请使用 https:// 或 http://。';return;}
+ for(const key of ['url','pdfURL','readingURL','coverURL']){if(raw[key]&&!safeURL(raw[key])){$('form-error').textContent='链接请使用 https:// 或 http://。';return;}}
  const record={...raw,title:raw.title.trim(),topic:raw.topic.trim(),year:raw.year?Number(raw.year):null};
  if(!record.title||!record.topic){$('form-error').textContent='请填写论文标题与研究主题。';return;}
  // JSON code fences inside notes must not terminate the outer code block.
