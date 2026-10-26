@@ -70,3 +70,7 @@
 
 /* Only visible, moving volumes need compositor hints. */
 .wheel-carousel .depth-carousel__card[aria-hidden="true"]{will-change:auto}
+
+/* Real papers use an uncropped image of the original first page. */
+.paper-cover.paper-cover--image{padding:0;background:#fff}
+.paper-cover-image{display:block;width:100%;height:100%;object-fit:contain;object-position:center;background:#fff;pointer-events:none;user-select:none;-webkit-user-drag:none}
