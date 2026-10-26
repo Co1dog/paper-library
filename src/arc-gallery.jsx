@@ -14,15 +14,20 @@ function PaperFigure({variant}) {
  </svg>;
 }
 const PaperCover=memo(function PaperCover({paper,index,demo,active}){
+ const [coverFailed,setCoverFailed]=useState(false);
+ useEffect(()=>setCoverFailed(false),[paper.coverURL]);
+ const hasCover=Boolean(paper.coverURL)&&!coverFailed;
  return <div className={`paper-volume cover-${index%4}${active?' is-current':''}`}>
  <div className="book-back" aria-hidden="true"/><div className="book-spine" aria-hidden="true"><span>Paper Library</span></div><div className="book-pages" aria-hidden="true"/><div className="book-pages-top" aria-hidden="true"/>
- <div className="paper-cover">
+ <div className={`paper-cover${hasCover?' paper-cover--image':''}`}>
+  {hasCover?<img className="paper-cover-image" src={paper.coverURL} alt={`${paper.title} · 原文首页`} draggable={false} loading={active?'eager':'lazy'} decoding="async" onError={()=>setCoverFailed(true)}/>:<>
   <div className="cover-imprint"><span>Paper Library</span><span>{demo?'示例':paper.year||'文献'}</span></div>
   <span className="cover-topic">{paper.topic}</span>
   <div className="cover-title">{paper.title}</div>
   <div className="cover-authors">{paper.authors||'作者待补充'}</div>
   <PaperFigure variant={index}/>
   <div className="cover-foot"><span>{demo?'演示文献卡片':paper.venue||'我的阅读记录'}</span><span>{paper.favorite?'重点收藏':'阅读收藏'}</span></div>
+  </>}
  </div></div>;
 });
 class GalleryBoundary extends Component {
