@@ -66,7 +66,7 @@
 .is-transitioning .depth-carousel__card[tabindex="0"]{visibility:hidden!important}
 
 /* Preserve the original composition and scale each printed cover down by 10%. */
-.paper-volume{transform:scale(.9);transform-origin:center}
+.paper-volume{transform:scale(.9) rotateX(3deg) rotateY(-7deg);transform-origin:center}
 
 /* Only visible, moving volumes need compositor hints. */
 .wheel-carousel .depth-carousel__card[aria-hidden="true"]{will-change:auto}
@@ -74,3 +74,14 @@
 /* Real papers use an uncropped image of the original first page. */
 .paper-cover.paper-cover--image{padding:0;background:#fff}
 .paper-cover-image{display:block;width:100%;height:100%;object-fit:contain;object-position:center;background:#fff;pointer-events:none;user-select:none;-webkit-user-drag:none}
+
+.exhibition-title-link{display:block;width:100%;padding:8px 0;margin:-8px 0;text-align:inherit;font:inherit;letter-spacing:inherit;line-height:inherit;color:inherit;pointer-events:auto;cursor:pointer;touch-action:manipulation}
+.exhibition-title-link:focus-visible{outline:1px solid currentColor;outline-offset:8px}
+.exhibition-next{z-index:8}
+.list-preview{perspective:1000px}
+.paper-cover{transform:translateZ(12px)}
+.book-back{transform:translateZ(-12px)}
+.book-spine{width:24px;transform:translateZ(12px) rotateY(90deg)}
+.book-pages{width:24px;transform:translateZ(12px) rotateY(-90deg)}
+.book-pages-top{height:24px;transform:translateZ(12px) rotateX(-90deg)}
+@media(prefers-reduced-motion:reduce){.paper-volume{transform:scale(.9)}}

@@ -6,7 +6,7 @@
       "authors": "Matthias Nau, Austin Greene, Hannah Tarder-Stoll, Juan Antonio Lossio-Ventura, Francisco Pereira, Janice Chen, Christopher Baldassano & Chris I. Baker",
       "year": 2025,
       "venue": "Nature Communications 16, 7865",
-      "topic": "眼动与事件记忆",
+      "topic": "眼动、事件记忆、神经重现、fMRI、自然叙事",
       "url": "https://doi.org/10.1038/s41467-025-62375-9",
       "pdfURL": "https://co1dog.github.io/paper-library/papers/nau-2025/original.pdf",
       "readingURL": "https://co1dog.github.io/paper-library/papers/nau-2025/reading.html",
@@ -16,7 +16,14 @@
       "favorite": false,
       "readDate": "2026-10-26",
       "id": "nau-2025",
-      "issueURL": "https://github.com/Co1dog/paper-library/issues/1"
+      "issueURL": "https://github.com/Co1dog/paper-library/issues/1",
+      "keywords": [
+        "眼动",
+        "事件记忆",
+        "神经重现",
+        "fMRI",
+        "自然叙事"
+      ]
     },
     {
       "id": "nastase-2021-narratives",
@@ -24,7 +31,7 @@
       "authors": "Samuel A. Nastase et al.",
       "year": 2021,
       "venue": "Scientific Data 8, 250",
-      "topic": "自然叙事数据集",
+      "topic": "自然叙事、fMRI、语言理解、数据集、ISC",
       "url": "https://doi.org/10.1038/s41597-021-01033-3",
       "pdfURL": "https://co1dog.github.io/paper-library/papers/nastase-2021-narratives/original.pdf",
       "readingURL": "https://co1dog.github.io/paper-library/papers/nastase-2021-narratives/reading.html",
@@ -33,7 +40,14 @@
       "notes": "已收录原文与现有 xray 中文解读。\n\n原文版本：Publisher version; Scientific Data 8, 250 (2021)；共 22 页。\n\n完整公式、原图、交互和证据范围见「打开中文解读」。",
       "readDate": "2026-11-03",
       "favorite": false,
-      "pdfSHA256": "f88ffedf65b41d29ee8ba1470694cdc81ea48cb16a68d029da778402e07ac3ad"
+      "pdfSHA256": "f88ffedf65b41d29ee8ba1470694cdc81ea48cb16a68d029da778402e07ac3ad",
+      "keywords": [
+        "自然叙事",
+        "fMRI",
+        "语言理解",
+        "数据集",
+        "ISC"
+      ]
     },
     {
       "id": "zada-2025-podcast",
@@ -41,7 +55,7 @@
       "authors": "Zaid Zada et al.",
       "year": 2025,
       "venue": "Scientific Data 12, 1135",
-      "topic": "自然叙事数据集",
+      "topic": "自然叙事、ECoG、语言理解、数据集、编码模型",
       "url": "https://doi.org/10.1038/s41597-025-05462-2",
       "pdfURL": "https://co1dog.github.io/paper-library/papers/zada-2025-podcast/original.pdf",
       "readingURL": "https://co1dog.github.io/paper-library/papers/zada-2025-podcast/reading.html",
@@ -50,7 +64,14 @@
       "notes": "已收录原文与现有 xray 中文解读。\n\n原文版本：Publisher version; Scientific Data 12, 1135 (2025)；共 9 页。\n\n完整公式、原图、交互和证据范围见「打开中文解读」。",
       "readDate": "2026-11-03",
       "favorite": false,
-      "pdfSHA256": "920ddbfd64c10ed7a78b1530466b84e06575e86712e939f745604dc95216d534"
+      "pdfSHA256": "920ddbfd64c10ed7a78b1530466b84e06575e86712e939f745604dc95216d534",
+      "keywords": [
+        "自然叙事",
+        "ECoG",
+        "语言理解",
+        "数据集",
+        "编码模型"
+      ]
     },
     {
       "id": "chen-2016-episodic",
@@ -58,7 +79,7 @@
       "authors": "J. Chen, C. J. Honey, E. Simony, M. J. Arcaro, K. A. Norman & U. Hasson",
       "year": 2016,
       "venue": "Cerebral Cortex 26(8), 3428–3441",
-      "topic": "叙事与事件记忆",
+      "topic": "事件记忆、情景记忆、自然叙事、海马、fMRI、ISC",
       "url": "https://doi.org/10.1093/cercor/bhv155",
       "pdfURL": "https://co1dog.github.io/paper-library/papers/chen-2016-episodic/original.pdf",
       "readingURL": "https://co1dog.github.io/paper-library/papers/chen-2016-episodic/reading.html",
@@ -67,7 +88,15 @@
       "notes": "已收录原文与现有 xray 中文解读。\n\n原文版本：Author-hosted publisher Advance Access version, 3 August 2015, local pages 1–14; final issue: 2016, 26(8), 3428–3441；共 14 页。\n\n完整公式、原图、交互和证据范围见「打开中文解读」。",
       "readDate": "2026-11-03",
       "favorite": false,
-      "pdfSHA256": "c31435e55e654e326d1ccf8c6e6a0e0a37d7c9341c437b3a8727927482fb4052"
+      "pdfSHA256": "c31435e55e654e326d1ccf8c6e6a0e0a37d7c9341c437b3a8727927482fb4052",
+      "keywords": [
+        "事件记忆",
+        "情景记忆",
+        "自然叙事",
+        "海马",
+        "fMRI",
+        "ISC"
+      ]
     },
     {
       "id": "nastase-2019-isc",
@@ -75,7 +104,7 @@
       "authors": "Samuel A. Nastase, Valeria Gazzola, Uri Hasson & Christian Keysers",
       "year": 2019,
       "venue": "Social Cognitive and Affective Neuroscience 14(6), 667–685",
-      "topic": "分析方法",
+      "topic": "ISC、ISFC、fMRI、分析方法",
       "url": "https://doi.org/10.1093/scan/nsz037",
       "pdfURL": "https://co1dog.github.io/paper-library/papers/nastase-2019-isc/original.pdf",
       "readingURL": "https://co1dog.github.io/paper-library/papers/nastase-2019-isc/reading.html",
@@ -84,7 +113,13 @@
       "notes": "已收录原文与现有 xray 中文解读。\n\n原文版本：KNAW peer-reviewed version, with repository cover; local PDF pagination differs from journal pages 667–685；共 38 页。\n\n完整公式、原图、交互和证据范围见「打开中文解读」。",
       "readDate": "2026-11-03",
       "favorite": false,
-      "pdfSHA256": "662b2a19455600cf1aaef7530076c2e4d29cc8161d3134337ee90d8c7defe4d1"
+      "pdfSHA256": "662b2a19455600cf1aaef7530076c2e4d29cc8161d3134337ee90d8c7defe4d1",
+      "keywords": [
+        "ISC",
+        "ISFC",
+        "fMRI",
+        "分析方法"
+      ]
     },
     {
       "id": "balestriero-2026-jepa",
@@ -92,7 +127,7 @@
       "authors": "Randall Balestriero & Yann LeCun",
       "year": 2026,
       "venue": "arXiv:2610.39302v1",
-      "topic": "NeuroAI 与表示学习",
+      "topic": "NeuroAI、表示学习、JEPA、跨模态对齐",
       "url": "https://arxiv.org/abs/2610.39302v1",
       "pdfURL": "https://co1dog.github.io/paper-library/papers/balestriero-2026-jepa/original.pdf",
       "readingURL": "https://co1dog.github.io/paper-library/papers/balestriero-2026-jepa/reading.html",
@@ -101,7 +136,13 @@
       "notes": "已收录原文与现有 xray 中文解读。\n\n原文版本：arXiv v1, 2026-10-29；共 37 页。\n\n完整公式、原图、交互和证据范围见「打开中文解读」。",
       "readDate": "2026-11-03",
       "favorite": false,
-      "pdfSHA256": "083cc4228dffbf946af1a82d9f5817633eb4bb2a38d923b8320478453a3a6838"
+      "pdfSHA256": "083cc4228dffbf946af1a82d9f5817633eb4bb2a38d923b8320478453a3a6838",
+      "keywords": [
+        "NeuroAI",
+        "表示学习",
+        "JEPA",
+        "跨模态对齐"
+      ]
     },
     {
       "id": "xiao-2026-brain-guided",
@@ -109,7 +150,7 @@
       "authors": "Mingqing Xiao, Kai Du & Zhouchen Lin",
       "year": 2026,
       "venue": "Nature Machine Intelligence 8, 1275–1289",
-      "topic": "NeuroAI 与推理",
+      "topic": "NeuroAI、推理、语言模型、fMRI",
       "url": "https://doi.org/10.1038/s42256-026-01278-w",
       "pdfURL": "https://co1dog.github.io/paper-library/papers/xiao-2026-brain-guided/original.pdf",
       "readingURL": "https://co1dog.github.io/paper-library/papers/xiao-2026-brain-guided/reading.html",
@@ -118,7 +159,13 @@
       "notes": "已收录原文与现有 xray 中文解读。\n\n原文版本：arXiv:2606.11893v1; commentary follows this preprint, not the subscription journal PDF；共 63 页。\n\n完整公式、原图、交互和证据范围见「打开中文解读」。",
       "readDate": "2026-11-03",
       "favorite": false,
-      "pdfSHA256": "5f3513ced91ae953edb7aa008f01a3fc3f5b3c1c67b788159776e5db49584564"
+      "pdfSHA256": "5f3513ced91ae953edb7aa008f01a3fc3f5b3c1c67b788159776e5db49584564",
+      "keywords": [
+        "NeuroAI",
+        "推理",
+        "语言模型",
+        "fMRI"
+      ]
     }
   ]
 }

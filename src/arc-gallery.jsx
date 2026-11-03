@@ -15,14 +15,32 @@ function PaperFigure({variant}) {
 }
 const PaperCover=memo(function PaperCover({paper,index,demo,active}){
  const [coverFailed,setCoverFailed]=useState(false);
+ const volumeRef=useRef(null),tiltRef=useRef(null),boundsRef=useRef(null);
  useEffect(()=>setCoverFailed(false),[paper.coverURL]);
+ useEffect(()=>{
+  if(!matchMedia('(hover: hover) and (pointer: fine)').matches)return;
+  const context=gsap.context(()=>{
+   tiltRef.current={x:gsap.quickTo(volumeRef.current,'rotationX',{duration:.45,ease:'power3.out'}),
+    y:gsap.quickTo(volumeRef.current,'rotationY',{duration:.45,ease:'power3.out'}),
+    z:gsap.quickTo(volumeRef.current,'z',{duration:.45,ease:'power3.out'}),
+    scale:gsap.quickTo(volumeRef.current,'scale',{duration:.45,ease:'power3.out'})};
+  },volumeRef);
+  return()=>{tiltRef.current=null;context.revert();};
+ },[]);
+ const hover=event=>{
+  if(event.pointerType!=='mouse'||event.buttons||!tiltRef.current||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  if(!boundsRef.current)boundsRef.current=event.currentTarget.getBoundingClientRect();
+  const box=boundsRef.current,x=Math.max(0,Math.min(1,(event.clientX-box.left)/box.width)),y=Math.max(0,Math.min(1,(event.clientY-box.top)/box.height));
+  tiltRef.current.x(3+(0.5-y)*12);tiltRef.current.y(-7+(x-.5)*20);tiltRef.current.z(28);tiltRef.current.scale(.94);
+ };
+ const leave=()=>{boundsRef.current=null;if(!tiltRef.current)return;if(matchMedia('(prefers-reduced-motion: reduce)').matches){gsap.set(volumeRef.current,{rotationX:0,rotationY:0,z:0,scale:.9});return;}tiltRef.current.x(3);tiltRef.current.y(-7);tiltRef.current.z(0);tiltRef.current.scale(.9);};
  const hasCover=Boolean(paper.coverURL)&&!coverFailed;
- return <div className={`paper-volume cover-${index%4}${active?' is-current':''}`}>
+ return <div ref={volumeRef} className={`paper-volume cover-${index%4}${active?' is-current':''}`} onPointerEnter={hover} onPointerMove={hover} onPointerLeave={leave}>
  <div className="book-back" aria-hidden="true"/><div className="book-spine" aria-hidden="true"><span>Paper Library</span></div><div className="book-pages" aria-hidden="true"/><div className="book-pages-top" aria-hidden="true"/>
  <div className={`paper-cover${hasCover?' paper-cover--image':''}`}>
   {hasCover?<img className="paper-cover-image" src={paper.coverURL} alt={`${paper.title} · 原文首页`} draggable={false} loading={active?'eager':'lazy'} decoding="async" onError={()=>setCoverFailed(true)}/>:<>
   <div className="cover-imprint"><span>Paper Library</span><span>{demo?'示例':paper.year||'文献'}</span></div>
-  <span className="cover-topic">{paper.topic}</span>
+  <span className="cover-topic">{paper.keywords?.slice(0,2).join(' · ')||paper.topic}</span>
   <div className="cover-title">{paper.title}</div>
   <div className="cover-authors">{paper.authors||'作者待补充'}</div>
   <PaperFigure variant={index}/>
@@ -47,7 +65,7 @@ function ArcIsland(){
  currentRef.current=current;
  const switchMode=next=>{
   next=next==='list'?'list':'wheel';if(next===mode)return;
-  const source=mode==='list'?previewRef.current:exhibitionRef.current?.querySelectorAll('.depth-carousel__card')[selected];
+  const source=mode==='list'?previewRef.current:exhibitionRef.current?.querySelector(`[data-paper-index="${selected}"]`);
   if(current&&source&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
    const box=source.getBoundingClientRect();
    setFlight({paper:current,index:selected,demo:payload.isDemo,from:{left:box.left,top:box.top,width:box.width,height:box.height}});
@@ -88,7 +106,7 @@ function ArcIsland(){
  },[selected,mode,payload]);
  useEffect(()=>{
   if(!flight||!flightRef.current)return;
-  const target=mode==='list'?previewRef.current:exhibitionRef.current?.querySelectorAll('.depth-carousel__card')[selected];
+  const target=mode==='list'?previewRef.current:exhibitionRef.current?.querySelector(`[data-paper-index="${selected}"]`);
   if(!target){setFlight(null);return;}
   const box=target.getBoundingClientRect(),from=flight.from;
   const context=gsap.context(()=>{
@@ -108,10 +126,10 @@ function ArcIsland(){
    <button aria-pressed={mode==='wheel'} onClick={()=>switchMode('wheel')}>Wheel</button><span aria-hidden="true">,</span><button aria-pressed={mode==='list'} onClick={()=>switchMode('list')}>List</button>
   </div>
   {!payload?<p className="arc-fallback">正在整理你的书架…</p>:!current?<div className="arc-no-results"><h2>没有匹配的论文</h2><button data-open-library>调整搜索与筛选 →</button></div>:<>
-   <div className="exhibition-title" aria-live={playing?'off':'polite'} aria-atomic="true" style={{'--title-scale':titleScale}}><h2 ref={titleRef}>{current.title}</h2></div>
+   <div className="exhibition-title" aria-live={playing?'off':'polite'} aria-atomic="true" style={{'--title-scale':titleScale}}><h2 ref={titleRef} aria-label={current.title}><button className="exhibition-title-link" aria-label={`打开 ${current.title} 的论文详情`} onClick={()=>openPaper(current)}>{current.title}</button></h2></div>
    {mode==='wheel'?<>
     <div className="arc-stage-wrap"><DepthCarousel key={selectionKey} items={selection} initialIndex={selected} cardWidth={248} cardHeight={340} radius={2} perspective={1800} duration={800} autoplay={playing} autoplayDelay={5600} showControls={false} showIndicators={false} showShadows={false} onChange={index=>setActive(index)} onOpen={openPaper} renderCard={(paper,index,isActive)=><PaperCover paper={paper} index={index} demo={payload.isDemo} active={isActive}/>}/></div>
-    {selection.length>1&&<div className="exhibition-next" aria-hidden="true">{next.title}</div>}
+    {selection.length>1&&<div className="exhibition-next"><button className="exhibition-title-link" aria-label={`打开下一篇 ${next.title} 的论文详情`} onClick={()=>openPaper(next)}>{next.title}</button></div>}
    </>:<>
     <div className="exhibition-list" role="region" aria-label="论文标题目录"><ol>{selection.map((paper,index)=><li key={paper.id}><button ref={node=>{rowsRef.current[index]=node;}} className={selected===index?'is-current':''} aria-current={selected===index?'true':undefined} aria-label={`查看 ${paper.title}`} onPointerEnter={event=>{if(event.pointerType==='mouse')setActive(index);}} onFocus={()=>setActive(index)} onKeyDown={event=>focusRow(event,index)} onClick={()=>openPaper(paper)}><span className="list-position" aria-hidden="true">{index+1}</span><span className="list-title">{paper.title}</span></button></li>)}</ol></div>
     <button className="list-preview" ref={previewRef} aria-label={`打开 ${current.title} 的阅读笔记`} onClick={()=>openPaper(current)}><PaperCover paper={current} index={selected} demo={payload.isDemo} active/></button>

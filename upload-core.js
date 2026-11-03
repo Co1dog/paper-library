@@ -1,4 +1,5 @@
 // GitHub stores files and their catalog record in one commit. No server or stored secret.
+import {normalizeKeywords} from './search-core.js?v=keywords-20261103';
 export const OWNER = 'Co1dog';
 export const REPO = 'paper-library';
 export const BRANCH = 'main';
@@ -31,10 +32,11 @@ export function validateFiles(pdf, reading) {
 }
 export function validateRecord(raw) {
   const text = (key, max) => typeof raw[key] === 'string' ? raw[key].trim().slice(0, max) : '';
-  const result = {title:text('title',250),authors:text('authors',200),topic:text('topic',60),venue:text('venue',120),
+  const keywords=normalizeKeywords(raw.keywords?.length?raw.keywords:raw.topic);
+  const result = {title:text('title',250),authors:text('authors',200),keywords,topic:keywords.join('、'),venue:text('venue',120),
     summary:text('summary',400),notes:text('notes',5000),readDate:text('readDate',10),favorite:raw.favorite===true,
     year:raw.year ? Number(raw.year) : null,url:text('url',2000)};
-  if (!result.title || !result.topic) throw new Error('请填写论文标题与研究主题。');
+  if (!result.title || !keywords.length) throw new Error('请填写论文标题与关键词。');
   if (result.year !== null && (!Number.isInteger(result.year) || result.year < 1600 || result.year > 2100)) throw new Error('请检查发表年份。');
   if (!/^\d{4}-\d{2}-\d{2}$/.test(result.readDate) || !Number.isFinite(Date.parse(result.readDate))) throw new Error('请选择阅读日期。');
   if (result.url) {

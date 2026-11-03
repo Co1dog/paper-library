@@ -63,3 +63,23 @@ input[type=file]::file-selector-button{border:1px solid #555;background:#222;col
 .connection-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
 #account-status{font-size:14px;line-height:1.8}
 @media(max-width:640px){.upload-files{grid-template-columns:1fr;gap:12px}.upload-connection{align-items:start;flex-direction:column;gap:0}.upload-dialog{width:calc(100% - 20px)}.upload-cover-row{gap:16px}.connection-actions button{min-height:44px}}
+
+.topbar-actions{display:flex;align-items:center;gap:10px;pointer-events:auto}
+.search-toggle{position:relative;width:48px;height:48px;display:grid;place-items:center;border-radius:50%}
+.search-toggle:hover{background:var(--surface)}
+.search-toggle svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.4}
+#search-indicator{position:absolute;width:5px;height:5px;border-radius:50%;background:var(--ink);right:8px;top:9px}
+.keyword-heading{display:flex;justify-content:space-between;align-items:center;gap:16px;margin:22px 0 8px;font-size:13px;color:var(--muted)}
+.keyword-heading button{min-height:44px;flex:none;text-decoration:underline;text-underline-offset:4px}
+.keyword-heading button:disabled{opacity:.45;cursor:default}
+.keyword-options{display:flex;flex-wrap:wrap;gap:8px;flex:1;min-width:0}
+.keyword-choice{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:7px 12px;background:#191919;border:1px solid #333;border-radius:3px;cursor:pointer;color:#b4b4b4;font-size:13px}
+.keyword-choice input{width:15px;height:15px;accent-color:#eee;cursor:pointer;margin:0}
+.keyword-choice.is-selected{color:#fff;border-color:#aaa}
+.keyword-choice:focus-within{outline:1px solid #eee;outline-offset:3px}
+.paper-keywords{display:inline-flex;flex-wrap:wrap;gap:5px;align-items:center}
+.keyword-tag{font-size:11px;line-height:1.5;color:var(--muted);background:#242424;padding:4px 7px;border-radius:2px;white-space:nowrap}
+.catalog-dialog .filter-row{align-items:start;padding-top:0;gap:14px}
+.catalog-dialog .section-top{align-items:start}
+.catalog-dialog .search-wrap{min-width:260px}
+@media(max-width:760px){.keyword-heading{font-size:12px;align-items:start;gap:10px}.keyword-choice{min-height:44px}.catalog-dialog .search-wrap{min-width:0}.topbar-actions{gap:4px}.keyword-options{width:100%;flex:1 0 100%;max-height:156px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:4px}.catalog-dialog .filter-row{flex-wrap:wrap}}

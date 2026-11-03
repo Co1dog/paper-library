@@ -1,7 +1,8 @@
 // A DOM wheel carousel inspired by the circular motion of the supplied CRL reference.
 // GSAP drives one shared playhead; cards follow a circular orbit without a WebGL dependency.
-import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
+import {useCallback,useEffect,useLayoutEffect,useMemo,useRef,useState} from 'react';
 import gsap from 'gsap';
+import {wheelWindow,wheelDistance,wheelPose} from './wheel-geometry.js';
 import './DepthCarousel.css';
 
 const clamp=(value,min,max)=>Math.min(Math.max(value,min),max);
@@ -11,24 +12,24 @@ export default function DepthCarousel({items=[],cardWidth=268,cardHeight=366,rad
  duration=760,initialIndex=0,autoplay=false,autoplayDelay=5600,onChange,onOpen,renderCard,className='',showControls=true,showIndicators=true,showShadows=true}){
  const data=useMemo(()=>items.map(item=>typeof item==='string'?{image:item,alt:''}:item),[items]);
  const count=data.length;
- const rootRef=useRef(null),stageRef=useRef(null),cardsRef=useRef([]),shadowsRef=useRef([]);
+ const rootRef=useRef(null),stageRef=useRef(null),cardsRef=useRef(new Map()),shadowsRef=useRef(new Map());
  const posRef=useRef(initialIndex),targetRef=useRef(initialIndex),activeRef=useRef(initialIndex),pullRef=useRef(0),scaleRef=useRef(1);
  const sizeRef=useRef({width:900,height:600});
  const playhead=useRef({p:initialIndex}),driveRef=useRef(null),dragRef=useRef(null),wheelTimer=useRef(null),clickTimer=useRef(null);
- const visibleRef=useRef(new Set()),paintRef=useRef([]),publishedRef=useRef({active:null,position:null});
+ const visibleRef=useRef(new Set()),paintRef=useRef(new Map()),publishedRef=useRef({active:null,position:null});
  const pointerFrame=useRef(0),wheelQueued=useRef(false),wheelCommitRef=useRef(null);
  const reducedRef=useRef(false),suppressClick=useRef(false),intersecting=useRef(true);
  const changeRef=useRef(onChange),openRef=useRef(onOpen);
  changeRef.current=onChange;openRef.current=onOpen;
  const [active,setActive]=useState(initialIndex);
+ const [windowCenter,setWindowCenter]=useState(Math.floor(initialIndex));
+ const windowRef=useRef(Math.floor(initialIndex));
+ const renderedIndices=useMemo(()=>wheelWindow(windowCenter,count),[windowCenter,count]);
 
  const layout=useCallback(position=>{
   if(!count||!rootRef.current)return;
   posRef.current=position;
   const {width,height}=sizeRef.current,scale=scaleRef.current;
-  const orbitRadius=Math.min(width*.9,height*1.7);
-  const step=width<600?.45:.38;
-  const limit=Math.min(2.8,(count-1)/2);
   const force=reducedRef.current?0:clamp(targetRef.current-position,-1.2,1.2);
   pullRef.current+=(force-pullRef.current)*.16;
   const pull=pullRef.current;
@@ -41,35 +42,40 @@ export default function DepthCarousel({items=[],cardWidth=268,cardHeight=366,rad
    const value=position.toFixed(3);
    if(published.position!==value){rootRef.current.dataset.wheelPosition=value;published.position=value;}
   }
-  // At most nine candidates can enter the visible arc, regardless of library size.
-  const visible=new Set(),center=Math.floor(position),candidates=Math.min(count,9);
-  for(let slot=0;slot<candidates;slot++){
-   const i=wrap(center-4+slot,count),card=cardsRef.current[i];if(!card)continue;
-   let distance=wrap(i-position,count);if(distance>count/2)distance-=count;
-   const absolute=Math.abs(distance),opacity=count===1?1:clamp((limit+.45-absolute)*2.2,0,1);
+  // Recycle a seven-card DOM window, not one hidden DOM card per library entry.
+  const visible=new Set(),center=Math.floor(position);
+  if(center!==windowRef.current){windowRef.current=center;setWindowCenter(center);}
+  for(const i of wheelWindow(center,count)){
+   const card=cardsRef.current.get(i);if(!card)continue;
+   const distance=wheelDistance(i,position,count),absolute=Math.abs(distance);
+   const {x,y,angle,opacity}=wheelPose(distance,width,height);
    if(opacity<=.001)continue;
    visible.add(i);
-   const paint=paintRef.current[i]||(paintRef.current[i]={shown:false,opacity:null,stack:null});
+   let paint=paintRef.current.get(i);if(!paint){paint={shown:false,opacity:null,stack:null};paintRef.current.set(i,paint);}
    if(!paint.shown){card.style.visibility='visible';card.style.pointerEvents='auto';card.setAttribute('aria-hidden','false');paint.shown=true;}
    if(paint.opacity!==opacity){card.style.opacity=String(opacity);paint.opacity=opacity;}
    let tier=wrap(i-selected,count);if(tier>count/2)tier-=count;
    const stack=2000-Math.abs(tier)*100;
    if(paint.stack!==stack){card.style.zIndex=String(stack);paint.stack=stack;}
-   const angle=distance*step,x=orbitRadius*Math.sin(angle),y=orbitRadius*(1-Math.cos(angle));
    const rotation=angle*180/Math.PI*1.12+pull*3,z=-absolute*13;
-   card.style.transform=`translate(-50%,-50%) translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,${z.toFixed(2)}px) rotateZ(${rotation.toFixed(2)}deg) rotateY(${(-distance*2.5+pull*4).toFixed(2)}deg) rotateX(-2deg) skewY(${(-pull*1.2).toFixed(2)}deg) scale(${scale})`;
-   const shadow=showShadows&&shadowsRef.current[i];
+   card.style.transform=`translate(-50%,-50%) translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,${z.toFixed(2)}px) rotateZ(${rotation.toFixed(2)}deg) rotateY(${(-distance*5+pull*4).toFixed(2)}deg) rotateX(-3deg) skewY(${(-pull*1.2).toFixed(2)}deg) scale(${scale})`;
+   const shadow=showShadows&&shadowsRef.current.get(i);
    if(shadow){shadow.style.opacity=String(opacity*.075);shadow.style.transform=`translate(-50%,-50%) translate3d(${x.toFixed(2)}px,${(y+cardHeight*scale*.57+20).toFixed(2)}px,-40px) rotateZ(${rotation.toFixed(2)}deg) scale(${scale})`;}
   }
   for(const i of visibleRef.current){
    if(visible.has(i))continue;
-   const card=cardsRef.current[i];if(!card)continue;
+   const card=cardsRef.current.get(i);if(!card)continue;
    card.style.visibility='hidden';card.style.pointerEvents='none';card.setAttribute('aria-hidden','true');
-   if(paintRef.current[i])paintRef.current[i].shown=false;
-   if(showShadows&&shadowsRef.current[i])shadowsRef.current[i].style.opacity='0';
+   if(paintRef.current.has(i))paintRef.current.get(i).shown=false;
+   if(showShadows&&shadowsRef.current.has(i))shadowsRef.current.get(i).style.opacity='0';
   }
   visibleRef.current=visible;
  },[count,data,cardHeight,showShadows]);
+ useLayoutEffect(()=>{
+  const kept=new Set(renderedIndices);
+  for(const i of paintRef.current.keys())if(!kept.has(i))paintRef.current.delete(i);
+  layout(posRef.current);
+ },[renderedIndices,layout]);
 
  const moveTo=useCallback((target,immediate=false)=>{
   if(!count)return;
@@ -166,7 +172,7 @@ export default function DepthCarousel({items=[],cardWidth=268,cardHeight=366,rad
  },[moveTo]);
  useEffect(()=>{
   if(!autoplay||count<2)return;
-  const timer=setInterval(()=>{if(!reducedRef.current&&!document.hidden&&intersecting.current&&!dragRef.current&&!document.querySelector('dialog[open]')&&!cardsRef.current.some(card=>card?.matches(':hover'))&&!rootRef.current?.contains(document.activeElement))navigate(1);},Math.max(autoplayDelay,1200));
+  const timer=setInterval(()=>{if(!reducedRef.current&&!document.hidden&&intersecting.current&&!dragRef.current&&!document.querySelector('dialog[open]')&&![...cardsRef.current.values()].some(card=>card?.matches(':hover'))&&!rootRef.current?.contains(document.activeElement))navigate(1);},Math.max(autoplayDelay,1200));
   return ()=>clearInterval(timer);
  },[autoplay,autoplayDelay,count,navigate]);
  useEffect(()=>()=>{clearTimeout(wheelTimer.current);clearTimeout(clickTimer.current);cancelAnimationFrame(pointerFrame.current);},[]);
@@ -175,9 +181,9 @@ export default function DepthCarousel({items=[],cardWidth=268,cardHeight=366,rad
   onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerEnd} onPointerCancel={pointerEnd}
   onKeyDown={event=>{if(event.key==='ArrowRight'||event.key==='ArrowLeft'){event.preventDefault();navigate(event.key==='ArrowRight'?1:-1);}}}>
   <div className="depth-carousel__stage" ref={stageRef}>
-   {showShadows&&data.map((_,i)=><div key={'shadow-'+i} ref={el=>{shadowsRef.current[i]=el;}} className="depth-carousel__shadow" aria-hidden="true"/>)}
-   {data.map((item,i)=><div key={item.id??i} ref={el=>{cardsRef.current[i]=el;}} className="depth-carousel__card" style={{width:cardWidth,height:cardHeight,borderRadius:radius,visibility:'hidden'}} aria-hidden="true" role="button" tabIndex={active===i?0:-1} aria-roledescription="slide" aria-label={`${i+1} / ${count}：${item.alt||item.title}`} onClick={()=>openCard(i)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openCard(i);}}}>
-    {renderCard?renderCard(item,i,active===i):<img src={item.image} alt={item.alt||''} draggable={false}/>}
+   {showShadows&&renderedIndices.map(i=><div key={'shadow-'+i} ref={el=>{if(el)shadowsRef.current.set(i,el);else shadowsRef.current.delete(i);}} className="depth-carousel__shadow" aria-hidden="true"/>)}
+   {renderedIndices.map(i=><div key={data[i].id??i} ref={el=>{if(el)cardsRef.current.set(i,el);else cardsRef.current.delete(i);}} data-paper-index={i} className="depth-carousel__card" style={{width:cardWidth,height:cardHeight,borderRadius:radius,visibility:'hidden'}} aria-hidden="true" role="button" tabIndex={active===i?0:-1} aria-roledescription="slide" aria-label={`${i+1} / ${count}：${data[i].alt||data[i].title}`} onClick={()=>openCard(i)} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();openCard(i);}}}>
+    {renderCard?renderCard(data[i],i,active===i):<img src={data[i].image} alt={data[i].alt||''} draggable={false}/>}
    </div>)}
   </div>
   {showControls&&count>1&&<><button type="button" className="depth-carousel__arrow depth-carousel__arrow--prev" aria-label="上一篇论文" onClick={()=>navigate(-1)}>←</button><button type="button" className="depth-carousel__arrow depth-carousel__arrow--next" aria-label="下一篇论文" onClick={()=>navigate(1)}>→</button></>}
