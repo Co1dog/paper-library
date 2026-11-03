@@ -1,125 +1,53 @@
 # Paper Library
 
-一个以 GitHub Pages 托管、GitHub Issues 保存论文记录的个人阅读书架。
+在线书架：https://co1dog.github.io/paper-library/
 
-**在线书架：** https://co1dog.github.io/paper-library/
+## 在网站中上传
 
-## 功能
+右上角菜单 → **添加论文** → 选择原文 PDF 和中文解读 HTML → 检查首页封面与文献信息 → **上传并加入书架**。文件不再需要手动上传到 GitHub 网页，也无需手动创建 Issue。
 
-- 标题、作者、期刊、主题、阅读笔记全文检索
-- 研究主题筛选，卡片 / 列表视图
-- 最近 30 天、重点收藏、有笔记的论文
-- 原文 PDF、独立解读页、真实首页封面、笔记详情与 JSON 导出
-- 桌面一屏横向书架，手机横滑轮播；右上角三横线菜单收纳辅助功能
-- 无真实记录时展示明确标注的示例卡片，统计只计算真实记录
+首次使用，在「连接书架 / 上传授权」中连接 fine-grained personal access token：Resource owner 选择 **Co1dog**，Repository access 只选择 **paper-library**，Contents 设为 **Read and write**，Metadata 保持默认只读。授权码只在当前页面内存中使用，不保存到 localStorage、sessionStorage、URL 或仓库；刷新或关闭页面后需要重新连接。不要通过聊天发送授权码。
 
-## 添加论文
+- 原文和解读每个文件最多 60 MB；自选封面最多 5 MB。
+- 本地托管的 PDF.js 从原文第一页生成封面，PDF 保持原始字节；无法生成时可选择 PNG / JPG。
+- HTML 需要是完整阅读页，图像和脚本应内嵌或使用在线地址。
+- 这是公开书架，上传的文件和笔记公开可见。请上传确认可以公开分享的原文和可信解读。
+- 文件、封面和目录放入同一次提交；并行修改通过非强制更新保留。重复论文会被提示，失败不会显示为成功。
+- 保存后书架立即显示新记录；公开阅读入口在 GitHub Pages 发布完成后可用。
 
-1. 打开右上角三横线功能菜单，点击「添加论文」，填写标题、主题、原文链接、阅读笔记等。
-2. 点击「继续到 GitHub 提交」，再点击生成的链接。
-3. 用 **Co1dog** 登录 GitHub，在预填的新 Issue 中点击 **Create / Submit new issue**。
-4. 回到网页，在功能菜单中点击「刷新 GitHub 论文」。
+## 展示与阅读
 
-长笔记会提供「复制完整记录」按钮，将记录粘贴到 GitHub Issue 正文后提交。
-表单草稿保存在当前浏览器中，**只有 GitHub 提交成功后才跨设备可见**。清空浏览器数据会移除未提交的表单草稿。
+纯黑背景、大幅背景标题、真实封面和 Wheel / List 双视图沿用现有设计。轮盘支持滚轮、双轴触控板、拖动、方向键和惯性吸附。中文使用 Noto Serif SC / 系统宋体，英文使用托管的 Anthropic Serif。
 
-## 编辑、删除、恢复
+搜索、主题筛选、添加、上传授权、自动轮播、JSON 导出和刷新位于右上角三横线菜单。详情分别打开原文 PDF、完整中文解读和期刊页面。无真实记录时的示例均有标注，且不计入真实统计。
 
-在论文详情中点击「在 GitHub 编辑」，编辑 Issue 正文 JSON 中对应的字段并保存。
-关闭 Issue 会将该条记录从书架中移除；重新打开可以恢复。
-重点收藏通过 JSON 中 `"favorite": true` / `false` 管理。
+保留性能优化：每帧只计算可见圆弧，合并滚轮与拖动输入，复用静态封面，避免无效阴影。尊重 prefers-reduced-motion，自动轮播默认关闭。
 
-## 数据与权限
+## 资料与来源
 
-- 这是公开书架。提交的文献信息和笔记会公开显示。
-- 页面只读取仓库所有者 **Co1dog** 创建的开放 Issue，并要求正文包含 `<!-- paper-library:v1 -->` 和有效 JSON 代码块。
-- 其他访客创建的 Issue 不会显示到书架。
-- 不使用 GitHub Token，也不把登录凭证存到网页中。
-- GitHub 公共 API 有读取速率限制。连接失败时网页会显示明确提示；稍后刷新即可。
-- 每次最多读取 1000 条开放 Issue，超过会提示归档，不会静默遗漏。
-- 导出只包含真实记录，不包括演示卡片。
-- 文献信息和笔记通过 Issues 保存；PDF、独立解读页和封面可放入仓库，再通过记录中的 URL 关联。添加表单不直接上传文件。
-- 英文统一使用随站点托管的 Anthropic Serif（含正体与斜体），中文使用 Noto Serif SC（宋体，Google Fonts）。加载失败时回退到系统宋体 / 衬线字体。
+`papers/library.json` 保存目录。每条记录关联 `papers/<id>/original.pdf`、`reading.html`、`cover.png`。原有仓库所有者创建、带 `<!-- paper-library:v1 -->` 的开放 Issue 继续兼容；同一 DOI / URL 不重复统计。已迁入目录的记录以目录为准。
 
-## 页面发布
+2026-11-03 从 Papers 文件夹选取 6 篇完整 xray 解读，排除草稿、备份、QA 测试件和网页抓取件，并匹配各自原文：
 
-仓库 Settings → Pages → Source 选择 **Deploy from a branch**，Branch 选择 **main**，目录选择 **/(root)**，Save。
-之后修改 main 分支文件会触发 Pages 更新。
+- Nastase et al. (2019)，ISC 方法：38 页同行评审稿，含机构封面。
+- Chen et al. (2016)，Minutes versus Hours：2015 Advance Access 版本，14 页。
+- Nastase et al. (2021)，Narratives fMRI：出版社版本，22 页。
+- Zada et al. (2025)，Podcast ECoG：出版社版本，9 页。
+- Balestriero & LeCun (2026)，Platonic / JEPAs：arXiv v1，37 页。
+- Xiao et al. (2026)，Brain-guided reasoning：arXiv v1，63 页；解读沿用该预印本页码。
 
-主体为 HTML / CSS / JavaScript，轮播使用预先构建的 React island。部署现有版本无需安装依赖或构建；修改轮播源码后的构建方法见下文。`.nojekyll` 禁用 Jekyll 处理。
+加上先前的 Nau et al. (2025)，共 7 篇。各目录 README 登记原文版本、来源和 SHA-256。源文件未修改；公开解读副本移除源机器绝对路径，保留图像、公式、交互与证据范围。原文版权与许可属于所标注的作者和出版方，中文解读为独立阅读材料。
 
-## 记录格式
+## 开发与验证
 
-```markdown
-<!-- paper-library:v1 -->
-
-下面应有一个 json 代码块，其内容格式如下：
-```
-
-```json
-{
-  "title": "论文标题",
-  "authors": "作者",
-  "year": 2025,
-  "venue": "期刊或会议",
-  "topic": "研究主题",
-  "url": "https://doi.org/...",
-  "pdfURL": "https://co1dog.github.io/paper-library/papers/example/original.pdf",
-  "readingURL": "https://co1dog.github.io/paper-library/papers/example/reading.html",
-  "coverURL": "https://co1dog.github.io/paper-library/papers/example/cover.png",
-  "summary": "一句话收获",
-  "notes": "阅读笔记",
-  "readDate": "2026-10-23",
-  "favorite": true
-}
-```
-
-若迁移到其他仓库，请修改 `app.js` 中的 `OWNER` / `REPO`，以及 HTML 和本说明中的账号文案。
-
-## 循环轮盘书架
-
-- 左侧显示阅读信息，右侧为大幅 3D 书架，桌面端一屏呈现。
-- 参考 CRL Library 的 Wheel 交互，论文沿平面圆弧循环转动；保留书脊和纸页厚度。
-- 纵向或横向滚轮均可驱动轮盘；连续滚动具有惯性，停止后吸附到最近一篇，标题随中心论文同步更新。
-- 轮播与完整列表共享搜索、主题、视图和排序结果，默认按最近阅读排列。
-- 点击侧面卡片将其移到中间，点击中间卡片或「打开阅读笔记」查看笔记。
-- 支持鼠标滚轮、双轴触控板、左右键和拖拽。手机在轮盘区域可左右或上下拖动，区域外保留页面正常滚动。菜单、表单和笔记弹窗保留原生滚动。
-- 自动轮播默认关闭，可在功能菜单开启；手动开启后在悬停、键盘焦点、页面隐藏、轮播离屏或笔记弹窗开启时暂停。
-- 尊重系统 prefers-reduced-motion，关闭自动与位移动效。
-- 轮播与普通列表使用同一份 GitHub 数据。没有真实论文时清楚标注示例。
-- 有 `coverURL` 的论文使用真实封面，保持完整页面比例；未提供图片或加载失败时回退到标题与主题生成的排版封面。
-
-主体页面仍使用 HTML / CSS / JavaScript；立体轮播是独立 React island，采用 React Bits DepthCarousel + GSAP。生产 bundle 已提交到 assets/，GitHub Pages 直接发布根目录。
-
-### 修改轮播源码
+主体为原生 HTML / CSS / JavaScript modules；轮播为 React Bits + GSAP island，生产 bundle 已提交。GitHub Pages 发布 main 分支根目录，`.nojekyll` 禁用 Jekyll。
 
 ```sh
 pnpm install --frozen-lockfile
+pnpm test
 pnpm run build
 ```
 
-修改 src/ 后必须重新构建并提交 assets/。修改 app.js、style.css 等主体文件无需构建。依赖版本由 pnpm-lock.yaml 固定。组件来源、修改说明和许可证见 THIRD_PARTY_NOTICES.md 与 REACT_BITS_LICENSE.md。
+主体文件无需构建。修改 src/ 后重新构建并提交 assets/。上传核心位于 upload-core.js，界面与 PDF 封面生成位于 upload.js。测试覆盖字节传输、账户权限、原子提交、并发合并、重复论文和失败状态。
 
-## 展览式首页与双视图
-
-首页只保留论文封面、融入背景的大标题与 Wheel / List 切换。纯黑背景与纸白文字，封面保留纸张色；中文宋体及英文 Anthropic Serif 沿用原方案。
-
-- **Wheel**：全屏循环圆弧轮盘，滚轮、横向或纵向拖动以及方向键翻阅；当前标题与下一篇的背景标题同步更新。
-- **List**：文字目录配合单张封面预览；鼠标经过或键盘聚焦目录项时更新预览，点击打开笔记。上下方向键浏览目录。
-- 两种视图保留同一篇选中论文，切换时封面在两个布局间移动；减少动态效果的系统偏好下直接切换。展示方式保存在当前设备。
-- 搜索、筛选、添加、笔记、自动轮播、导出和 GitHub 同步从右上角菜单进入。菜单中也可以切换展示方式和打开当前论文。
-- 示例封面明确标注“示例”，真实阅读记录仍单独统计。
-
-视觉构图参考用户提供的 [CRL Library](https://crl-2026.webflow.io/library)，以独立的 React / CSS / GSAP 实现适配论文书架。
-
-## 论文原文与解读
-
-`papers/nau-2025/` 保存 Nau et al. (2025) 的正式版 PDF、现有中文解读和未裁切的 PDF 首页封面。原文保持原始字节，来源、许可与校验值见该目录的 README。解读作为独立阅读材料打开，保留图像、公式与标注功能。
-
-记录中的 `pdfURL`、`readingURL` 和 `coverURL` 均为可选的 HTTPS / HTTP 地址。论文详情分别提供原文 PDF、中文解读和期刊页面入口；Wheel 与 List 使用同一张封面。
-
-## 轮盘性能
-
-每帧只计算当前圆弧附近的封面，离开可见范围后才切换隐藏状态；层级和辅助属性在状态变化时更新。滚轮输入按浏览器动画帧合并，拖动也只在下一帧绘制最新位置。静态封面与列表签名复用缓存，纯黑背景不生成不可见的模糊地面阴影。
-
-动画沿用浏览器 / GSAP 的帧调度，未人为设置更低的帧率上限。实际流畅度仍取决于浏览器、屏幕刷新率及设备负载。
+组件和字体许可见 THIRD_PARTY_NOTICES.md、REACT_BITS_LICENSE.md；PDF.js 的 Apache-2.0 许可保存在 assets/vendor/pdfjs/LICENSE。视觉构图参考 [CRL Library](https://crl-2026.webflow.io/library)，以独立 React / CSS / GSAP 实现。

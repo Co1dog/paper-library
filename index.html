@@ -7,8 +7,8 @@
 <title>Paper Library · 我的论文书架</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="./assets/fonts/anthropic-serif-roman.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css?v=nau-library-20261026"><link rel="stylesheet" href="./assets/arc-gallery.css?v=nau-library-20261026">
-<script src="./app.js?v=nau-library-20261026" defer></script><script type="module" src="./assets/arc-gallery.js?v=nau-library-20261026"></script>
+<link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css?v=direct-upload-20261103"><link rel="stylesheet" href="./assets/arc-gallery.css?v=direct-upload-20261103">
+<script type="module" src="./app.js?v=direct-upload-20261103"></script><script type="module" src="./assets/arc-gallery.js?v=direct-upload-20261103"></script>
 </head>
 <body>
 <a class="skip" href="#main">跳到论文书架</a>
@@ -38,7 +38,7 @@
  </nav>
  <h3 class="menu-label">研究主题</h3><div id="sidebar-topics" class="sidebar-topics"></div>
  <div class="menu-stats" aria-label="真实阅读记录统计"><span><b id="stat-papers">0</b> 已读论文</span><span><b id="stat-topics">0</b> 主题</span><span><b id="stat-notes">0</b> 笔记</span></div>
- <div class="menu-utilities"><button id="selection-open">查看当前论文与笔记 <span>↗</span></button><button id="motion-toggle" aria-pressed="false">开启自动轮播 <span>→</span></button><button id="refresh">刷新 GitHub 论文 <span>↻</span></button><button id="help-open">使用指南 <span>?</span></button><a id="repo-link" target="_blank" rel="noopener">在 GitHub 查看书架 <span>↗</span></a></div>
+ <div class="menu-utilities"><button id="selection-open">查看当前论文与笔记 <span>↗</span></button><button id="motion-toggle" aria-pressed="false">开启自动轮播 <span>→</span></button><button id="refresh">刷新 GitHub 论文 <span>↻</span></button><button id="connection-open">连接书架 / 上传授权 <span>↗</span></button><button id="help-open">使用指南 <span>?</span></button><a id="repo-link" target="_blank" rel="noopener">在 GitHub 查看书架 <span>↗</span></a></div>
  <p class="cloud-status" id="cloud-status" role="status">正在连接 GitHub</p><div class="notice" id="notice" hidden></div>
 </dialog>
 <dialog id="library-dialog" class="catalog-dialog" aria-labelledby="library-title"><button class="close" data-close aria-label="关闭完整书架">×</button><div class="catalog-context">当前视图：<span id="view-name">全部论文</span></div>
@@ -50,7 +50,39 @@
 </section>
 </dialog>
 <dialog id="detail-dialog"><button class="close" data-close aria-label="关闭论文详情">×</button><div id="detail-content"></div></dialog>
-<dialog id="add-dialog"><button class="close" data-close aria-label="关闭添加论文">×</button><h2>留住一篇好论文。</h2><p class="dialog-intro">填写阅读记录，然后在 GitHub 确认提交。记录会同步到这张书架。</p><form id="add-form"><label>论文标题 <span>*</span><input name="title" required maxlength="250" placeholder="论文的原始标题"></label><div class="form-row"><label>作者<input name="authors" maxlength="200" placeholder="例如：Smith et al."></label><label>发表年份<input name="year" type="number" min="1600" max="2100" placeholder="2025"></label></div><div class="form-row"><label>期刊 / 会议<input name="venue" maxlength="120" placeholder="例如：Nature Neuroscience"></label><label>研究主题<input name="topic" required maxlength="60" placeholder="例如：事件记忆"></label></div><label>原文链接 / DOI 链接<input name="url" type="url" placeholder="https://doi.org/…"></label><label>原文 PDF 链接<input name="pdfURL" type="url" placeholder="https://…/original.pdf"></label><label>完整解读链接<input name="readingURL" type="url" placeholder="https://…/reading.html"></label><label>真实封面图片链接<input name="coverURL" type="url" placeholder="https://…/cover.png"></label><label>一句话收获<input name="summary" maxlength="400" placeholder="这篇论文给你最重要的启发是什么？"></label><label>阅读笔记<textarea name="notes" rows="4" maxlength="5000" placeholder="研究问题、方法、结论，以及你自己的想法…"></textarea></label><div class="form-row"><label>阅读日期<input name="readDate" type="date" required></label><label class="check-label"><input name="favorite" type="checkbox"> 标为重点收藏</label></div><p class="form-hint">公开书架：提交的文献与笔记将公开显示。表单草稿暂存在此设备；在 GitHub 提交后跨设备可见。支持关联原文 PDF、完整解读与真实封面图片。</p><p class="form-error" id="form-error" role="alert"></p><button type="submit" class="primary full">继续到 GitHub 提交 ↗</button><a id="submit-link" class="submit-link" target="_blank" rel="noopener" hidden>已生成记录，点击前往 GitHub；提交后回到这里刷新 ↗</a></form></dialog>
-<dialog id="help-dialog"><button class="close" data-close aria-label="关闭使用指南">×</button><h2>你的书架，存在 GitHub。</h2><div class="guide-step"><div><h3>添加读过的论文</h3><p>在功能菜单中点击「添加论文」，填写标题、主题与笔记，继续到 GitHub 点击 Create / Submit new issue 确认。需要登录仓库所有者 Co1dog 账号。</p></div></div><div class="guide-step"><div><h3>回到这里，再次找到它</h3><p>提交后打开右上角功能菜单，点击「刷新 GitHub 论文」。搜索覆盖标题、作者、期刊、主题和笔记，主题标签可以组合筛选。</p></div></div><div class="guide-step"><div><h3>随时补充想法</h3><p>在论文详情点击「在 GitHub 编辑」，修改 JSON 中的笔记或重点收藏标记，保留格式。关闭对应 Issue 即可从书架移除；重新打开即可恢复。</p></div></div><p class="form-hint">GitHub Pages 托管页面，GitHub Issues 保存记录；页面只展示仓库所有者创建的记录。正文笔记按纯文本显示。原文 PDF、解读和封面通过链接关联；文件可以保存在这个 GitHub 仓库中。</p><button id="export" class="secondary full">↓ 导出我的论文记录（JSON）</button></dialog>
+<dialog id="add-dialog" class="upload-dialog" aria-labelledby="upload-title">
+ <button class="close" data-close aria-label="关闭添加论文">×</button>
+ <h2 id="upload-title">留住一篇好论文。</h2>
+ <p class="dialog-intro">原文与中文解读一起入库，封面取自 PDF 首页。</p>
+ <div class="upload-connection"><span>文件将保存到 Co1dog / paper-library</span><button type="button" id="upload-connect-open">连接书架 ↗</button></div>
+ <form id="add-form">
+  <div class="upload-files">
+   <label>原文 PDF <input type="file" id="upload-pdf" accept="application/pdf,.pdf" required><span class="file-hint">保留原文文件 · 最大 60 MB</span></label>
+   <label>中文解读 HTML <input type="file" id="upload-reading" accept="text/html,.html,.htm" required><span class="file-hint">完整解读页，图片和脚本需内嵌或使用在线地址</span></label>
+  </div>
+  <div class="upload-cover-row"><img id="upload-preview" alt="待上传论文的首页封面预览" hidden><div><p id="cover-status" class="form-hint">选择 PDF 后自动生成首页封面。</p><details><summary>选择其他封面</summary><label>PNG 或 JPG<input type="file" id="upload-cover" accept="image/png,image/jpeg"></label></details></div></div>
+  <label>论文标题 <span>*</span><input name="title" required maxlength="250" placeholder="论文的原始标题"></label>
+  <div class="form-row"><label>作者<input name="authors" maxlength="200" placeholder="例如：Smith et al."></label><label>发表年份<input name="year" type="number" min="1600" max="2100" placeholder="2026"></label></div>
+  <div class="form-row"><label>期刊 / 会议<input name="venue" maxlength="120" placeholder="期刊、会议或预印本版本"></label><label>研究主题<input name="topic" required maxlength="60" placeholder="例如：事件记忆"></label></div>
+  <label>期刊 / DOI 链接<input name="url" type="url" placeholder="https://doi.org/…"></label>
+  <label>一句话收获<input name="summary" maxlength="400" placeholder="这篇论文给你最重要的启发是什么？"></label>
+  <label>阅读笔记<textarea name="notes" rows="3" maxlength="5000" placeholder="研究问题、方法、结论，以及你自己的想法…"></textarea></label>
+  <div class="form-row"><label>阅读日期<input name="readDate" type="date" required></label><label class="check-label"><input name="favorite" type="checkbox"> 标为重点收藏</label></div>
+  <p class="form-hint">这是公开书架，上传的原文和解读将公开。保存前可检查上方封面与文献信息。</p>
+  <div id="upload-progress" class="upload-progress" role="status" hidden><progress id="upload-progress-bar" max="6" value="0"></progress><p id="upload-status"></p></div>
+  <p class="form-error" id="form-error" role="alert"></p><p id="upload-result" class="upload-result" role="status" hidden></p>
+  <button type="submit" id="upload-submit" class="primary full">上传并加入书架</button>
+ </form>
+</dialog>
+<dialog id="connection-dialog" aria-labelledby="connection-title">
+ <button class="close" data-close aria-label="关闭书架连接">×</button><h2 id="connection-title">连接你的书架。</h2>
+ <p class="dialog-intro">为 Co1dog / paper-library 授权后，即可在本站上传。授权仅在当前页面内存中使用，刷新或关闭页面后需要重新连接。</p>
+ <ol class="connection-steps"><li>在 GitHub 创建 fine-grained personal access token，Resource owner 选择 Co1dog。</li><li>Repository access 只选择 paper-library，将 Contents 设为 Read and write。Metadata 保持默认只读。</li><li>把授权码粘贴到下方，点击连接。不要把它发送到聊天中。</li></ol>
+ <a class="secondary" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">在 GitHub 创建授权 ↗</a>
+ <div class="connection-fields"><label for="github-token">本次上传授权码</label><input id="github-token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…" aria-describedby="token-privacy"><p id="token-privacy" class="form-hint">仅发送到 GitHub API，不保存到浏览器存储或仓库。</p></div>
+ <p id="account-status" role="status">尚未连接书架</p><p id="account-error" class="form-error" role="alert"></p>
+ <div class="connection-actions"><button id="account-connect" class="primary">连接书架</button><button id="account-disconnect" class="secondary" hidden>断开连接</button><button id="account-return" class="secondary">返回上传</button></div>
+</dialog>
+<dialog id="help-dialog"><button class="close" data-close aria-label="关闭使用指南">×</button><h2>你的书架，存在 GitHub。</h2><div class="guide-step"><div><h3>添加读过的论文</h3><p>在功能菜单中点击「添加论文」，选择原文 PDF 和完整中文解读 HTML，检查自动生成的首页封面，填写标题、主题和笔记，点击「上传并加入书架」。首次使用先连接拥有本仓库写入权限的授权码。</p></div></div><div class="guide-step"><div><h3>回到这里，再次找到它</h3><p>提交后打开右上角功能菜单，点击「刷新 GitHub 论文」。搜索覆盖标题、作者、期刊、主题和笔记，主题标签可以组合筛选。</p></div></div><div class="guide-step"><div><h3>原文和解读一起阅读</h3><p>点击封面打开详情，分别进入原文 PDF、中文解读和期刊页面。解读保留原有图文与交互；导出按钮保存书架的文献信息与链接。</p></div></div><p class="form-hint">GitHub Pages 托管页面。站内上传会把原文、解读、封面和目录记录一并提交到仓库；旧的 GitHub Issue 记录继续兼容。授权码只在当前页面内存中使用。</p><button id="export" class="secondary full">↓ 导出我的论文记录（JSON）</button></dialog>
 <div id="toast" role="status" class="toast" hidden></div>
 </body></html>

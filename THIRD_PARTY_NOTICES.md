@@ -24,3 +24,6 @@ The bundled production JavaScript retains license comments in its adjacent `.LEG
 Motion reference: https://crl-2026.webflow.io/library (inspected 2026-10-24). The wheel input, circular orbit, inertia and snapping are independently implemented with DOM transforms and GSAP. No reference site images, copy, WebGL shaders or application bundle are included.
 
 The exhibition layout, blended title treatment, and Wheel / List interaction refer to the same user-supplied CRL Library page. Implementation and paper-cover artwork are project code; no reference-site images, branding, text collection, or production bundle are included.
+# PDF.js
+
+The original-PDF upload preview uses Mozilla PDF.js (`pdfjs-dist` 5.4.530), vendored in `assets/vendor/pdfjs/`. Source: https://github.com/mozilla/pdf.js . License: Apache-2.0; the complete license is preserved beside the bundled module and worker. PDF files are rendered locally in the browser to create a first-page cover.

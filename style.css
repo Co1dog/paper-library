@@ -36,3 +36,30 @@ main{height:100svh;min-height:0;padding:0;display:block;overflow:hidden}
 :root{color-scheme:dark}
 dialog{background:#0d0d0d}dialog::backdrop{background:#000a}
 .cloud-status.error,.form-error{color:#d6a08f}
+
+/* Upload stays in the editorial drawer system; 2 x 1fr + 20px fits the dialog. */
+.upload-dialog{width:min(800px,calc(100% - 32px))}
+.upload-connection{display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:13px;color:var(--muted)}
+.upload-connection button{min-height:44px;color:var(--ink);text-decoration:underline;text-underline-offset:4px;white-space:nowrap}
+.upload-files{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.upload-files label{min-width:0;padding:16px;background:#171717;margin:0}
+form input[type=file]{padding:10px 0;border:0;border-radius:0;background:none;font-size:13px;min-width:0}
+input[type=file]::file-selector-button{border:1px solid #555;background:#222;color:#eee;padding:9px 12px;margin-right:10px;border-radius:3px;font:inherit;cursor:pointer}
+.file-hint{color:#b4b4b4;font-size:12px;line-height:1.8}
+.upload-cover-row{display:flex;align-items:center;gap:20px;margin:24px 0}
+.upload-cover-row img{height:138px;width:100px;object-fit:contain;background:#fff;flex:none}
+.upload-cover-row details{font-size:13px;color:var(--muted)}
+.upload-cover-row summary{cursor:pointer;padding:8px 0;min-height:36px}
+.upload-cover-row details label{margin:10px 0}
+.upload-progress{margin:20px 0}
+.upload-progress progress{width:100%;height:6px;accent-color:#eee}
+.upload-progress p,.upload-result{font-size:14px;line-height:1.9}
+.upload-result{background:#1b1b1b;padding:16px}
+.connection-steps{padding-left:22px;margin:20px 0;font-size:14px;line-height:1.9;color:#b4b4b4}
+.connection-steps li{padding:5px 0}
+.connection-fields{margin:28px 0 8px}
+.connection-fields label{display:block;font-size:14px;margin-bottom:10px}
+.connection-fields input{width:100%;background:#171717;color:#fff;border:1px solid #555;padding:13px;font-size:16px;border-radius:3px}
+.connection-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+#account-status{font-size:14px;line-height:1.8}
+@media(max-width:640px){.upload-files{grid-template-columns:1fr;gap:12px}.upload-connection{align-items:start;flex-direction:column;gap:0}.upload-dialog{width:calc(100% - 20px)}.upload-cover-row{gap:16px}.connection-actions button{min-height:44px}}

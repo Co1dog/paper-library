@@ -1,3 +1,5 @@
+import {mergePapers,fromBase64} from './upload-core.js';
+import {setupUploader} from './upload.js';
 'use strict';
 const OWNER = 'Co1dog';
 const REPO = 'paper-library';
@@ -12,6 +14,7 @@ const DEMO = [
  {id:'demo-5',title:'A computational lens on human memory',authors:'示例作者',year:2025,venue:'示例会议',topic:'计算模型',summary:'示例收获：记录一个方法如何解释现象，以及它能如何迁移到自己的研究。',notes:'',readDate:'2026-10-12',favorite:true},
  {id:'demo-6',title:'Eye movements as a window into cognition',authors:'示例作者',year:2023,venue:'示例期刊',topic:'眼动与记忆',summary:'示例收获：把值得重读的论文标为重点收藏，让好想法随时可以重新打开。',notes:'',readDate:'2026-10-10',favorite:false}
 ];
+const pendingRecords=new Map(),coverPreviews=new Map();
 let papers = [], currentView = 'all', activeTopics = new Set(), isDemo = true, busy = false;
 const $ = id => document.getElementById(id);
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -36,7 +39,7 @@ function topicControls(){
  $('filters').innerHTML='<button class="chip'+(!activeTopics.size?' active':'')+'" data-topic="">全部主题</button>'+topics.map(t=>`<button class="chip${activeTopics.has(t)?' active':''}" data-topic="${escapeHTML(t)}" aria-pressed="${activeTopics.has(t)}">${escapeHTML(t)}</button>`).join('');
  $('sidebar-topics').innerHTML=topics.map(t=>`<button class="topic-item${activeTopics.has(t)?' active':''}" data-topic="${escapeHTML(t)}"><span class="topic-dot"></span>${escapeHTML(t)}${isDemo?' <span class="demo-label">示例</span>':''}</button>`).join('')||'<p class="sidebar-empty">添加论文后，<br>主题会在这里慢慢生长。</p>';
 }
-function updateCarousel(found){window.dispatchEvent(new CustomEvent('paper-library:update',{detail:{papers:found,isDemo}}));}
+function updateCarousel(found){window.dispatchEvent(new CustomEvent('paper-library:update',{detail:{papers:found.map(p=>coverPreviews.has(p.id)?{...p,coverURL:coverPreviews.get(p.id)}:p),isDemo}}));}
 window.addEventListener('paper-library:carousel-ready',render);
 window.addEventListener('paper-library:open',event=>detail(String(event.detail?.id||'')));
 function render(){
@@ -70,35 +73,46 @@ function normalizePaper(raw,issue){
  if(!raw||typeof raw!=='object'||typeof raw.title!=='string'||!raw.title.trim()||typeof raw.topic!=='string'||!raw.topic.trim())return null;
  const text=(key,max)=>typeof raw[key]==='string'?raw[key].slice(0,max):'';
  const readDate=/^\d{4}-\d{2}-\d{2}$/.test(raw.readDate||'')&&!isNaN(Date.parse(raw.readDate))?raw.readDate:issue.created_at.slice(0,10);
- return {id:String(issue.number),title:text('title',250),topic:text('topic',60),authors:text('authors',200),venue:text('venue',120),year:Number.isInteger(raw.year)&&raw.year>=1600&&raw.year<=2100?raw.year:null,url:safeURL(raw.url),pdfURL:safeURL(raw.pdfURL),readingURL:safeURL(raw.readingURL),coverURL:safeURL(raw.coverURL),summary:text('summary',400),notes:text('notes',5000),favorite:raw.favorite===true,readDate,issueURL:issue.html_url};
+ return {id:String(raw.id||issue.number),title:text('title',250),topic:text('topic',60),authors:text('authors',200),venue:text('venue',120),year:Number.isInteger(raw.year)&&raw.year>=1600&&raw.year<=2100?raw.year:null,url:safeURL(raw.url),pdfURL:safeURL(raw.pdfURL),readingURL:safeURL(raw.readingURL),coverURL:safeURL(raw.coverURL),summary:text('summary',400),notes:text('notes',5000),favorite:raw.favorite===true,readDate,issueURL:issue.html_url,pdfSHA256:text('pdfSHA256',64)};
 }
 async function loadPapers(){
- if(busy)return;busy=true;$('refresh').disabled=true;$('cloud-status').classList.remove('error');$('cloud-status').textContent='◌ 正在读取 GitHub';$('notice').hidden=true;
+ if(busy)return;busy=true;$('refresh').disabled=true;$('cloud-status').classList.remove('error');$('cloud-status').textContent='正在读取书架';$('notice').hidden=true;
+ const warnings=[];let catalog=null,issues=null;
+ try{
+  const local=await fetch('./papers/library.json',{cache:'no-store',signal:AbortSignal.timeout(15000)});
+  if(local.ok){const data=await local.json();if(data.version===1&&Array.isArray(data.papers)){
+   catalog=data.papers;
+   papers=mergePapers([...pendingRecords.values()],catalog.filter(p=>p&&typeof p==='object').map(p=>normalizePaper(p,{number:p.id,created_at:'2026-11-03',html_url:p.issueURL||''})).filter(Boolean));
+   isDemo=!papers.length;render();
+  }}
+ }catch{}
+ try{
+  const remote=await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/papers/library.json?ref=main&t=${Date.now()}`,{cache:'no-store',headers:{Accept:'application/vnd.github+json'},signal:AbortSignal.timeout(15000)});
+  if(remote.ok){const data=await remote.json();const parsed=JSON.parse(new TextDecoder().decode(fromBase64(data.content)));if(parsed.version===1&&Array.isArray(parsed.papers))catalog=parsed.papers;}
+  else if(!catalog)warnings.push('云端目录暂时无法读取。');
+ }catch{if(!catalog)warnings.push('云端目录连接待恢复。');}
  try{
   const collected=[];let invalid=0;
   for(let page=1;page<=10;page++){
    const response=await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/issues?state=open&creator=${OWNER}&per_page=100&page=${page}`,{cache:'no-store',headers:{Accept:'application/vnd.github+json'},signal:AbortSignal.timeout(15000)});
-   if(!response.ok)throw new Error(response.status===403||response.status===429?'GitHub 读取频率达到上限，请稍后刷新。':response.status===404?'暂时无法找到公开仓库，请稍后刷新。':`GitHub 暂时无法读取（${response.status}）。`);
-   const issues=await response.json();if(!Array.isArray(issues))throw new Error('GitHub 返回的记录格式不正确。');
-   for(const issue of issues){
+   if(!response.ok)throw new Error('旧版 Issue 记录暂时无法更新。');
+   const data=await response.json();if(!Array.isArray(data))throw new Error('旧版记录格式不正确。');
+   for(const issue of data){
     if(issue.pull_request||issue.user?.login?.toLowerCase()!==OWNER.toLowerCase()||!issue.body?.includes(MARKER))continue;
-    try{
-     const match=issue.body.match(/```json\s*\n([\s\S]*?)\n```/);
-     if(!match)throw new Error('No JSON');
-     const p=normalizePaper(JSON.parse(match[1]),issue);if(!p)throw new Error('Invalid record');collected.push(p);
-    }catch{invalid++;}
+    try{const match=issue.body.match(/```json\s*\n([\s\S]*?)\n```/);if(!match)throw new Error();const p=normalizePaper(JSON.parse(match[1]),issue);if(!p)throw new Error();collected.push(p);}catch{invalid++;}
    }
-   if(issues.length<100)break;
-   if(page===10)throw new Error('记录超过一次读取范围（1000 条）。请归档早期记录后再刷新。');
+   if(data.length<100)break;
+   if(page===10)throw new Error('Issue 记录超过一次读取范围（1000 条）。');
   }
-  papers=collected;isDemo=!papers.length;activeTopics.clear();
-  $('cloud-status').textContent='已从 GitHub 更新';
-  if(invalid){$('notice').textContent=`有 ${invalid} 条记录的 JSON 格式需要修复；其他论文已正常显示。请在 GitHub 查看。`;$('notice').hidden=false;}
-  render();
- }catch(error){
-  $('cloud-status').textContent='○ GitHub 连接待恢复';$('cloud-status').classList.add('error');
-  $('notice').textContent=error.message+' 页面保留当前内容；可在功能菜单中刷新重试。';$('notice').hidden=false;
- }finally{busy=false;$('refresh').disabled=false;}
+  issues=collected;if(invalid)warnings.push(`有 ${invalid} 条旧版记录的 JSON 需要修复。`);
+ }catch(error){warnings.push(error.message);}
+ if(catalog!==null||issues!==null){
+  const normalized=(catalog||[]).filter(p=>p&&typeof p==='object').map(p=>normalizePaper(p,{number:p.id,created_at:'2026-11-03',html_url:p.issueURL||''})).filter(Boolean);
+  papers=mergePapers([...pendingRecords.values()],normalized,issues||[]);isDemo=!papers.length;activeTopics.clear();render();
+  $('cloud-status').textContent=warnings.length?'书架已载入 · 部分同步待恢复':'已从 GitHub 更新';
+ }else{$('cloud-status').textContent='GitHub 连接待恢复';$('cloud-status').classList.add('error');}
+ if(warnings.length){$('notice').textContent=warnings.join(' ')+' 可稍后刷新。';$('notice').hidden=false;}
+ busy=false;$('refresh').disabled=false;
 }
 function localDate(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 const form=$('add-form');
@@ -111,28 +125,11 @@ function openAdd(){
 }
 try{const draft=JSON.parse(localStorage.getItem(DRAFT_KEY)||'null');if(draft){for(const [key,value] of Object.entries(draft)){const el=form.elements.namedItem(key);if(el){if(el.type==='checkbox')el.checked=value===true;else el.value=String(value);}}}}catch{}
 form.addEventListener('input',()=>{try{localStorage.setItem(DRAFT_KEY,JSON.stringify(draftData()));}catch{}});
-form.addEventListener('submit',event=>{
- event.preventDefault();$('form-error').textContent='';if(!form.reportValidity())return;
- const raw=draftData();
- for(const key of ['url','pdfURL','readingURL','coverURL']){if(raw[key]&&!safeURL(raw[key])){$('form-error').textContent='链接请使用 https:// 或 http://。';return;}}
- const record={...raw,title:raw.title.trim(),topic:raw.topic.trim(),year:raw.year?Number(raw.year):null};
- if(!record.title||!record.topic){$('form-error').textContent='请填写论文标题与研究主题。';return;}
- // JSON code fences inside notes must not terminate the outer code block.
- const json=JSON.stringify(record,null,2).replace(/`/g,'\\u0060');
- const body=`${MARKER}\n\n这是一条 Paper Library 阅读记录。编辑时请保留下方 JSON 格式。\n\n\`\`\`json\n${json}\n\`\`\``;
- const url=new URL(`${REPO_URL}/issues/new`);url.searchParams.set('title','[Paper] '+record.title);
- let transfer=$('transfer');if(transfer)transfer.remove();
- if(encodeURIComponent(body).length+url.href.length<7500){url.searchParams.set('body',body);}
- else{
-  transfer=document.createElement('div');transfer.id='transfer';
-  const hint=document.createElement('p');hint.className='form-hint';hint.textContent='这篇笔记较长。请复制下面的完整记录，在 GitHub 新 Issue 的正文中粘贴后提交。';
-  const area=document.createElement('textarea');area.readOnly=true;area.value=body;area.rows=5;area.setAttribute('aria-label','待粘贴到 GitHub 的完整论文记录');
-  const copy=document.createElement('button');copy.type='button';copy.className='secondary full';copy.textContent='复制完整记录';copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(body);notify('已复制，请到 GitHub 正文中粘贴');}catch{area.select();notify('请手动复制已选中的记录');}});
-  transfer.append(hint,area,copy);$('submit-link').before(transfer);
- }
- $('submit-link').href=url.href;$('submit-link').hidden=false;$('submit-link').textContent=transfer?'记录已准备好，前往 GitHub 粘贴并提交 ↗':'记录已准备好，点击前往 GitHub 确认提交 ↗';
- $('submit-link').scrollIntoView({block:'nearest',behavior:'smooth'});
-});
+setupUploader({onSaved:(record,preview)=>{
+ pendingRecords.set(record.id,record);coverPreviews.set(record.id,preview);
+ papers=mergePapers([record],papers);isDemo=false;activeTopics.clear();render();
+ $('cloud-status').textContent='已保存到 GitHub';notify('论文已加入书架');
+}});
 document.addEventListener('click',event=>{
  const target=event.target.closest('[data-open-add],[data-open-library],[data-close],[data-detail],[data-topic],[data-view]');if(!target)return;
  if(target.hasAttribute('data-open-add'))openAdd();
@@ -155,7 +152,7 @@ function openLibrary(){showDialog($('library-dialog'));$('search').focus();}
 $('menu-toggle').addEventListener('click',()=>{showDialog($('menu-dialog'));$('menu-toggle').setAttribute('aria-expanded','true');});
 $('menu-dialog').addEventListener('close',()=>{$('menu-toggle').setAttribute('aria-expanded','false');});
 $('motion-toggle').addEventListener('click',()=>{window.dispatchEvent(new Event('paper-library:toggle-motion'));});
-document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('click',event=>{if(event.target!==dialog)return;const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();}));
+document.querySelectorAll('dialog').forEach(dialog=>dialog.addEventListener('click',event=>{if(event.target!==dialog||dialog.dataset.busy==='true')return;const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();}));
 $('export').addEventListener('click',()=>{
  const blob=new Blob([JSON.stringify({version:1,repository:REPO_URL,exportedAt:new Date().toISOString(),papers},null,2)],{type:'application/json'});
  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`paper-library-${localDate()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);notify(`已导出 ${papers.length} 篇真实论文记录`);
