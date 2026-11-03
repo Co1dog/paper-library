@@ -1,11 +1,10 @@
-import {mergePapers,fromBase64} from './upload-core.js';
-import {setupUploader} from './upload.js';
+import {mergePapers,fromBase64,DRAFT_KEY} from './upload-core.js?v=20261103.2';
+import {setupUploader} from './upload.js?v=20261103.2';
 'use strict';
 const OWNER = 'Co1dog';
 const REPO = 'paper-library';
 const REPO_URL = `https://github.com/${OWNER}/${REPO}`;
 const MARKER = '<!-- paper-library:v1 -->';
-const DRAFT_KEY = 'paper-library-draft-v1';
 const DEMO = [
  {id:'demo-1',title:'Anticipatory gaze & event memory',authors:'示例作者',year:2025,venue:'示例期刊',topic:'眼动与记忆',summary:'示例收获：把研究问题、关键方法和自己的想法，留在同一个地方。',notes:'这是一条演示笔记，不是真实论文结论。\n\n研究问题\n这篇论文试图回答什么？\n\n方法与证据\n哪些实验真正支撑了结论？\n\n我的想法\n它和正在进行的研究有什么联系？',readDate:'2026-10-22',favorite:true},
  {id:'demo-2',title:'How the brain organizes continuous experience',authors:'示例作者',year:2025,venue:'示例期刊',topic:'事件记忆',summary:'示例收获：一句话写下最值得记住的观点，下次回看时迅速找回阅读线索。',notes:'这是一条演示笔记，不是真实文献记录。\n\n可以记录事件边界、实验设计，以及需要重新查看的 Figure。',readDate:'2026-10-20',favorite:true},

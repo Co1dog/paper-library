@@ -1,4 +1,4 @@
-import {GitHubLibrary, validateFiles, validateRecord} from './upload-core.js';
+import {GitHubLibrary, validateFiles, validateRecord, DRAFT_KEY} from './upload-core.js?v=20261103.2';
 
 export function setupUploader({onSaved}) {
   const $=id=>document.getElementById(id);
@@ -114,7 +114,7 @@ export function setupUploader({onSaved}) {
       const transientCover=URL.createObjectURL(new Blob([coverBytes],{type:'image/png'}));
       onSaved(result.record,transientCover);
       $('upload-result').hidden=false;$('upload-result').textContent='已加入书架。文件正在发布，公开阅读入口会在 GitHub Pages 更新后可用。';
-      form.reset();try{localStorage.removeItem('paper-library-draft-v1');}catch{}
+      form.reset();try{localStorage.removeItem(DRAFT_KEY);}catch{}
       form.elements.readDate.value=new Date().toLocaleDateString('en-CA');
       coverBytes=null;$('upload-preview').hidden=true;$('cover-status').textContent='选择 PDF 后自动生成首页封面。';
     }catch(error){showError(error.message);$('upload-status').textContent='保存未完成';}

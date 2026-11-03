@@ -3,6 +3,7 @@ export const OWNER = 'Co1dog';
 export const REPO = 'paper-library';
 export const BRANCH = 'main';
 export const CATALOG = 'papers/library.json';
+export const DRAFT_KEY = 'paper-library-upload-draft-v2';
 export const SITE = 'https://co1dog.github.io/paper-library/';
 const API = `https://api.github.com/repos/${OWNER}/${REPO}`;
 const LIMIT = 60 * 1024 * 1024;
