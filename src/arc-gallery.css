@@ -65,8 +65,8 @@
 .is-transitioning .list-preview{visibility:hidden}
 .is-transitioning .depth-carousel__card[tabindex="0"]{visibility:hidden!important}
 
-/* Preserve the original composition and scale each printed cover down by 10%. */
-.paper-volume{transform:scale(.9) rotateX(3deg) rotateY(-7deg);transform-origin:center}
+/* Slightly larger paper faces; the carousel pitch and gaps stay unchanged. */
+.paper-volume{transform:scale(.97) rotateX(3deg) rotateY(-7deg);transform-origin:center}
 
 /* Only visible, moving volumes need compositor hints. */
 .wheel-carousel .depth-carousel__card[aria-hidden="true"]{will-change:auto}
@@ -79,9 +79,11 @@
 .exhibition-title-link:focus-visible{outline:1px solid currentColor;outline-offset:8px}
 .exhibition-next{z-index:8}
 .list-preview{perspective:1000px}
-.paper-cover{transform:translateZ(12px)}
-.book-back{transform:translateZ(-12px)}
-.book-spine{width:24px;transform:translateZ(12px) rotateY(90deg)}
-.book-pages{width:24px;transform:translateZ(12px) rotateY(-90deg)}
-.book-pages-top{height:24px;transform:translateZ(12px) rotateX(-90deg)}
-@media(prefers-reduced-motion:reduce){.paper-volume{transform:scale(.9)}}
+/* A single sheet: a fine edge and no book spine or stacked pages. */
+.paper-tilt{position:relative;width:100%;height:100%;transform-style:preserve-3d;transform-origin:center;transform:translateZ(0)}
+.paper-cover{transform:translateZ(1px);border-radius:1px;box-shadow:0 1px 3px #0002}
+.book-back{transform:translateZ(-1px);border-radius:1px;background:#e4e2dc}
+.book-spine{width:2px;background:#dad8d1;transform:translateZ(1px) rotateY(90deg)}
+.book-pages{top:0;bottom:0;width:2px;background:#eeece5;box-shadow:none;transform:translateZ(1px) rotateY(-90deg)}
+.book-pages-top{left:0;right:0;height:2px;background:#eeece5;transform:translateZ(1px) rotateX(-90deg)}
+@media(prefers-reduced-motion:reduce){.paper-volume{transform:scale(.97)}.paper-tilt{transform:none!important}}

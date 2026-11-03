@@ -1,4 +1,4 @@
-import {Component, memo, useEffect, useMemo, useRef, useState} from 'react';
+import {Component, createContext, memo, useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import gsap from 'gsap';
 import DepthCarousel from './components/DepthCarousel.jsx';
@@ -13,30 +13,33 @@ function PaperFigure({variant}) {
    <g {...common}><path d="M30 62 67 22 103 56 143 17 175 50M30 62 103 56M67 22 143 17M67 22 88 75 143 17" opacity=".7"/>{[[30,62],[67,22],[103,56],[143,17],[175,50],[88,75]].map(([cx,cy])=><circle key={cx} cx={cx} cy={cy} r="5" fill="var(--cover-ground)"/>)}</g>}
  </svg>;
 }
+const PaperTiltContext=createContext(null);
 const PaperCover=memo(function PaperCover({paper,index,demo,active}){
  const [coverFailed,setCoverFailed]=useState(false);
- const volumeRef=useRef(null),tiltRef=useRef(null),boundsRef=useRef(null);
+ const volumeRef=useRef(null),registry=useContext(PaperTiltContext);
  useEffect(()=>setCoverFailed(false),[paper.coverURL]);
  useEffect(()=>{
-  if(!matchMedia('(hover: hover) and (pointer: fine)').matches)return;
+  const node=volumeRef.current;
+  const boundsNode=node.closest('.depth-carousel__card,.list-preview');
+  if(!registry||!boundsNode||!matchMedia('(hover: hover) and (pointer: fine)').matches)return;
+  let controls;
   const context=gsap.context(()=>{
-   tiltRef.current={x:gsap.quickTo(volumeRef.current,'rotationX',{duration:.45,ease:'power3.out'}),
-    y:gsap.quickTo(volumeRef.current,'rotationY',{duration:.45,ease:'power3.out'}),
-    z:gsap.quickTo(volumeRef.current,'z',{duration:.45,ease:'power3.out'}),
-    scale:gsap.quickTo(volumeRef.current,'scale',{duration:.45,ease:'power3.out'})};
+   controls=Object.fromEntries(['rotationX','rotationY','z','scaleX','scaleY'].map(property=>
+    [property,gsap.quickTo(node,property,{duration:.38,ease:'power3.out'})]));
   },volumeRef);
-  return()=>{tiltRef.current=null;context.revert();};
- },[]);
- const hover=event=>{
-  if(event.pointerType!=='mouse'||event.buttons||!tiltRef.current||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-  if(!boundsRef.current)boundsRef.current=event.currentTarget.getBoundingClientRect();
-  const box=boundsRef.current,x=Math.max(0,Math.min(1,(event.clientX-box.left)/box.width)),y=Math.max(0,Math.min(1,(event.clientY-box.top)/box.height));
-  tiltRef.current.x(3+(0.5-y)*12);tiltRef.current.y(-7+(x-.5)*20);tiltRef.current.z(28);tiltRef.current.scale(.94);
- };
- const leave=()=>{boundsRef.current=null;if(!tiltRef.current)return;if(matchMedia('(prefers-reduced-motion: reduce)').matches){gsap.set(volumeRef.current,{rotationX:0,rotationY:0,z:0,scale:.9});return;}tiltRef.current.x(3);tiltRef.current.y(-7);tiltRef.current.z(0);tiltRef.current.scale(.9);};
+  const controller={boundsNode,
+   move:({x,y})=>{
+    controls.rotationX(5+(0.5-y)*16);controls.rotationY(-5+(x-.5)*22);
+    controls.z(24);controls.scaleX(1.035);controls.scaleY(1.035);
+   },
+   leave:()=>{controls.rotationX(0);controls.rotationY(0);controls.z(0);controls.scaleX(1);controls.scaleY(1);}
+  };
+  registry.set(node,controller);
+  return()=>{registry.delete(node);context.revert();};
+ },[registry]);
  const hasCover=Boolean(paper.coverURL)&&!coverFailed;
- return <div ref={volumeRef} className={`paper-volume cover-${index%4}${active?' is-current':''}`} onPointerEnter={hover} onPointerMove={hover} onPointerLeave={leave}>
- <div className="book-back" aria-hidden="true"/><div className="book-spine" aria-hidden="true"><span>Paper Library</span></div><div className="book-pages" aria-hidden="true"/><div className="book-pages-top" aria-hidden="true"/>
+ return <div className={`paper-volume cover-${index%4}${active?' is-current':''}`}><div ref={volumeRef} className="paper-tilt">
+ <div className="book-back" aria-hidden="true"/><div className="book-spine" aria-hidden="true"></div><div className="book-pages" aria-hidden="true"/><div className="book-pages-top" aria-hidden="true"/>
  <div className={`paper-cover${hasCover?' paper-cover--image':''}`}>
   {hasCover?<img className="paper-cover-image" src={paper.coverURL} alt={`${paper.title} · 原文首页`} draggable={false} loading={active?'eager':'lazy'} decoding="async" onError={()=>setCoverFailed(true)}/>:<>
   <div className="cover-imprint"><span>Paper Library</span><span>{demo?'示例':paper.year||'文献'}</span></div>
@@ -46,7 +49,7 @@ const PaperCover=memo(function PaperCover({paper,index,demo,active}){
   <PaperFigure variant={index}/>
   <div className="cover-foot"><span>{demo?'演示文献卡片':paper.venue||'我的阅读记录'}</span><span>{paper.favorite?'重点收藏':'阅读收藏'}</span></div>
   </>}
- </div></div>;
+ </div></div></div>;
 });
 class GalleryBoundary extends Component {
  constructor(props){super(props);this.state={failed:false};}
@@ -59,10 +62,35 @@ function ArcIsland(){
  const titleRef=useRef(null),previewRef=useRef(null),rowsRef=useRef([]),currentRef=useRef(null);
  const exhibitionRef=useRef(null),flightRef=useRef(null),switchModeRef=useRef(null);
  const [flight,setFlight]=useState(null);
+ const tiltRegistry=useRef(new Map()),hoveredRef=useRef(null),hoverFrame=useRef(0),pointerRef=useRef(null);
+ const clearHover=()=>{
+  cancelAnimationFrame(hoverFrame.current);hoverFrame.current=0;
+  hoveredRef.current?.leave();hoveredRef.current=null;
+ };
+ const routeHover=event=>{
+  if(event.pointerType!=='mouse'||event.buttons||matchMedia('(prefers-reduced-motion: reduce)').matches){clearHover();return;}
+  pointerRef.current={x:event.clientX,y:event.clientY};
+  if(hoverFrame.current)return;
+  // Read only the bounded carousel window, then write the inner tilt transforms.
+  // Capture also sees movement over the clickable title layered above the paper.
+  hoverFrame.current=requestAnimationFrame(()=>{
+   hoverFrame.current=0;
+   const point=pointerRef.current;
+   const hits=[...tiltRegistry.current.values()].map(controller=>({controller,box:controller.boundsNode.getBoundingClientRect(),style:getComputedStyle(controller.boundsNode)}))
+    .filter(({box,style})=>style.visibility!=='hidden'&&point.x>=box.left&&point.x<=box.right&&point.y>=box.top&&point.y<=box.bottom)
+    .sort((a,b)=>(parseInt(b.style.zIndex)||0)-(parseInt(a.style.zIndex)||0));
+   const hit=hits[0],controller=hit?.controller;
+   if(hoveredRef.current!==controller){hoveredRef.current?.leave();hoveredRef.current=controller||null;}
+   if(hit)controller.move({x:(point.x-hit.box.left)/hit.box.width,y:(point.y-hit.box.top)/hit.box.height});
+  });
+ };
+ useEffect(()=>()=>cancelAnimationFrame(hoverFrame.current),[]);
+
  const selection=useMemo(()=>payload?payload.papers.map(p=>({...p,alt:p.title})):[],[payload]);
  const selectionKey=useMemo(()=>JSON.stringify(selection),[selection]);
  const selected=Math.min(active,Math.max(0,selection.length-1)),current=selection[selected];
  currentRef.current=current;
+ useEffect(()=>{clearHover();},[mode,selected,selectionKey]);
  const switchMode=next=>{
   next=next==='list'?'list':'wheel';if(next===mode)return;
   const source=mode==='list'?previewRef.current:exhibitionRef.current?.querySelector(`[data-paper-index="${selected}"]`);
@@ -121,7 +149,7 @@ function ArcIsland(){
  };
  const titleScale=current?Math.max(.52,Math.min(1,Math.sqrt(46/Math.max(current.title.length,1)))):1;
  const next=selection[(selected+1)%selection.length];
- return <div ref={exhibitionRef} className={`exhibition exhibition--${mode}${flight?' is-transitioning':''}`} data-display={mode}>
+ return <PaperTiltContext.Provider value={tiltRegistry.current}><div ref={exhibitionRef} onPointerMoveCapture={routeHover} onPointerLeave={clearHover} onPointerDownCapture={event=>{if(event.button===0)clearHover();}} onWheelCapture={clearHover} className={`exhibition exhibition--${mode}${flight?' is-transitioning':''}`} data-display={mode}>
   <div className="display-switch" role="group" aria-label="论文展示方式">
    <button aria-pressed={mode==='wheel'} onClick={()=>switchMode('wheel')}>Wheel</button><span aria-hidden="true">,</span><button aria-pressed={mode==='list'} onClick={()=>switchMode('list')}>List</button>
   </div>
@@ -138,7 +166,7 @@ function ArcIsland(){
    <span className="exhibition-position" aria-label={`第 ${selected+1} 篇，共 ${selection.length} 篇${payload.isDemo?'示例':''}`}>{selected+1}<span> / {selection.length}{payload.isDemo?' · 示例':''}</span></span>
    <span className="exhibition-hint" aria-hidden="true">{mode==='wheel'?'Scroll ↕':'Select ↗'}</span>
   </>}
- </div>;
+ </div></PaperTiltContext.Provider>;
 }
 const host=document.getElementById('arc-gallery');
 if(host)createRoot(host).render(<GalleryBoundary><ArcIsland/></GalleryBoundary>);
