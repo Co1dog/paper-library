@@ -160,7 +160,7 @@ export default function DepthCarousel({items=[],cardWidth=268,cardHeight=366,rad
   const projected=posRef.current-clamp(velocity*.4,-1.4,1.4);
   moveTo(Math.round(projected));
  };
- const openCard=index=>{if(suppressClick.current)return;if(index===activeRef.current)openRef.current?.(data[index]);else focus(index);};
+ const openCard=index=>{if(suppressClick.current)return;openRef.current?.(data[index]);};
 
  useEffect(()=>{
   const query=matchMedia('(prefers-reduced-motion: reduce)');

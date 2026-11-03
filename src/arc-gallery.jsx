@@ -62,12 +62,13 @@ function ArcIsland(){
  const titleRef=useRef(null),previewRef=useRef(null),rowsRef=useRef([]),currentRef=useRef(null);
  const exhibitionRef=useRef(null),flightRef=useRef(null),switchModeRef=useRef(null);
  const [flight,setFlight]=useState(null);
- const tiltRegistry=useRef(new Map()),hoveredRef=useRef(null),hoverFrame=useRef(0),pointerRef=useRef(null);
+ const tiltRegistry=useRef(new Map()),hoveredRef=useRef(null),hoverFrame=useRef(0),pointerRef=useRef(null),pressRef=useRef(null);
  const clearHover=()=>{
   cancelAnimationFrame(hoverFrame.current);hoverFrame.current=0;
   hoveredRef.current?.leave();hoveredRef.current=null;
  };
  const routeHover=event=>{
+  const press=pressRef.current;if(press&&Math.hypot(event.clientX-press.x,event.clientY-press.y)>6)press.moved=true;
   if(event.pointerType!=='mouse'||event.buttons||matchMedia('(prefers-reduced-motion: reduce)').matches){clearHover();return;}
   pointerRef.current={x:event.clientX,y:event.clientY};
   if(hoverFrame.current)return;
@@ -102,6 +103,22 @@ function ArcIsland(){
  };
  switchModeRef.current=switchMode;
  const openPaper=paper=>{if(paper)window.dispatchEvent(new CustomEvent('paper-library:open',{detail:{id:paper.id}}));};
+ const coverAtPoint=(x,y)=>document.elementsFromPoint(x,y)
+  .map(node=>node.closest('.depth-carousel__card[aria-hidden="false"]')).find(Boolean);
+ const startPress=event=>{
+  if(event.button!==0)return;
+  const card=coverAtPoint(event.clientX,event.clientY);
+  pressRef.current={x:event.clientX,y:event.clientY,index:card?Number(card.dataset.paperIndex):null,moved:false};
+  clearHover();
+ };
+ const openPressedCover=event=>{
+  const press=pressRef.current;pressRef.current=null;
+  // Hovered sheets have several transformed faces. Their click may bubble from
+  // the stage instead of the card; retain the paper chosen on pointer down.
+  if(event.detail===0||press?.index==null)return;
+  event.stopPropagation();
+  if(!press.moved)openPaper(selection[press.index]);
+ };
  useEffect(()=>{
   let last='';
   const receive=event=>{const value=event.detail,signature=JSON.stringify(value);if(signature===last)return;last=signature;setPayload(value);setActive(0);};
@@ -149,7 +166,7 @@ function ArcIsland(){
  };
  const titleScale=current?Math.max(.52,Math.min(1,Math.sqrt(46/Math.max(current.title.length,1)))):1;
  const next=selection[(selected+1)%selection.length];
- return <PaperTiltContext.Provider value={tiltRegistry.current}><div ref={exhibitionRef} onPointerMoveCapture={routeHover} onPointerLeave={clearHover} onPointerDownCapture={event=>{if(event.button===0)clearHover();}} onWheelCapture={clearHover} className={`exhibition exhibition--${mode}${flight?' is-transitioning':''}`} data-display={mode}>
+ return <PaperTiltContext.Provider value={tiltRegistry.current}><div ref={exhibitionRef} onPointerMoveCapture={routeHover} onPointerLeave={clearHover} onPointerDownCapture={startPress} onPointerCancelCapture={()=>{pressRef.current=null;}} onClickCapture={openPressedCover} onWheelCapture={clearHover} className={`exhibition exhibition--${mode}${flight?' is-transitioning':''}`} data-display={mode}>
   <div className="display-switch" role="group" aria-label="论文展示方式">
    <button aria-pressed={mode==='wheel'} onClick={()=>switchMode('wheel')}>Wheel</button><span aria-hidden="true">,</span><button aria-pressed={mode==='list'} onClick={()=>switchMode('list')}>List</button>
   </div>
