@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {normalizeKeywords,matchesPaper} from '../search-core.js';
+import {normalizeKeywords,matchesPaper,keywordGroup} from '../search-core.js';
 import {validateRecord} from '../upload-core.js';
 import {wheelWindow,wheelDistance,wheelPose} from '../src/components/wheel-geometry.js';
 const {papers}=JSON.parse(await readFile(new URL('../papers/library.json',import.meta.url)));
@@ -13,8 +13,8 @@ test('legacy combined categories split; multi-word English keywords stay intact'
  assert.deepEqual(normalizeKeywords(['眼动','gaze','fMRI']),['眼动','fMRI']);
 });
 test('combined keyword checkboxes use AND, and English aliases select the same papers',()=>{
- assert.deepEqual(ids('',new Set(['眼动','事件记忆'])),['nau-2025']);
- assert.deepEqual(ids('',new Set(['eye tracking','event memory'])),['nau-2025']);
+ assert.deepEqual(ids('',new Set(['fMRI','HMM'])),['nau-2025']);
+ assert.deepEqual(ids('',new Set(['功能磁共振','hidden markov model'])),['nau-2025']);
  assert.deepEqual(ids('',new Set(['眼动','ECoG'])),[]);
  assert.equal(ids('',new Set(['fMRI'])).length,5);
 });
@@ -61,4 +61,16 @@ test('lower cards leave the orbit rather than accumulating below the viewport',(
  assert.ok(wheelPose(2,1440,900).opacity<1);
  assert.equal(wheelPose(-3,390,844).opacity,0);
  assert.equal(wheelDistance(0,999,1000),1);
+});
+
+test('compact facets distinguish published datasets, actual signals and model families',()=>{
+ assert.deepEqual(ids('', ['有数据集']),['nau-2025','nastase-2021-narratives','zada-2025-podcast']);
+ assert.deepEqual(ids('', ['dataset','ecog']),['zada-2025-podcast']);
+ assert.deepEqual(ids('', ['LLM','fMRI']),['xiao-2026-brain-guided']);
+ assert.deepEqual(ids('', ['EEG']),[]);
+ assert.deepEqual(ids('', ['JEPA']),['balestriero-2026-jepa']);
+ assert.equal(keywordGroup('fMRI'),'信号 / 测量');
+ assert.equal(keywordGroup('dataset'),'数据资源');
+ assert.equal(keywordGroup('language models'),'AI 模型');
+ assert.equal(keywordGroup('HMM'),'方法 / 重点');
 });

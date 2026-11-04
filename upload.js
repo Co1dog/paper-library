@@ -1,4 +1,4 @@
-import {GitHubLibrary, validateFiles, validateRecord, DRAFT_KEY} from './upload-core.js?v=keywords-20261103';
+import {GitHubLibrary, validateFiles, validateRecord, DRAFT_KEY} from './upload-core.js?v=reading-room-20261104-v2';
 
 export function setupUploader({onSaved}) {
   const $=id=>document.getElementById(id);

@@ -7,8 +7,9 @@
 <title>Paper Library · 我的论文书架</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="./assets/fonts/anthropic-serif-roman.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css?v=cover-open-20261104b"><link rel="stylesheet" href="./assets/arc-gallery.css?v=cover-open-20261104b">
-<script type="module" src="./app.js?v=cover-open-20261104b"></script><script type="module" src="./assets/arc-gallery.js?v=cover-open-20261104b"></script>
+<link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css?v=reading-room-20261104-v2"><link rel="stylesheet" href="./assets/arc-gallery.css?v=reading-room-20261104-v2">
+<script type="module" src="./app.js?v=reading-room-20261104-v2"></script><script type="module" src="./assets/arc-gallery.js?v=reading-room-20261104-v2"></script>
+<link rel="stylesheet" href="./reader.css?v=reading-room-20261104-v2">
 </head>
 <body>
 <a class="skip" href="#main">跳到论文书架</a>
@@ -43,7 +44,7 @@
 </dialog>
 <dialog id="library-dialog" class="catalog-dialog" aria-labelledby="library-title"><button class="close" data-close aria-label="关闭完整书架">×</button><div class="catalog-context">当前视图：<span id="view-name">全部论文</span></div>
 <section class="library-section" aria-labelledby="library-title"><div class="section-top"><div><h2 id="library-title">我的论文书架 <span id="result-count"></span></h2></div><div class="library-tools"><label class="search-wrap"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6.5"/><path d="m15 15 5 5"/></svg><input type="search" id="search" placeholder="中文 / English · 标题、关键词、作者…" aria-label="中英文搜索论文"><kbd>/</kbd></label><label class="sr-only" for="sort">排序方式</label><select id="sort"><option value="read">最近阅读</option><option value="year">发表年份</option><option value="title">标题 A–Z</option></select></div></div>
-<div class="keyword-heading"><span id="keyword-selection">可组合勾选；同时包含全部所选关键词</span><button id="clear-keywords" type="button">清除关键词</button></div><div class="filter-row"><div class="keyword-options" id="filters" role="group" aria-label="关键词组合筛选" aria-description="关键词较多时可在此区域滚动；勾选后显示同时匹配的论文。"></div><div class="layout-toggle" aria-label="显示方式"><button class="active" id="grid-view" aria-label="卡片视图" aria-pressed="true">▦</button><button id="list-view" aria-label="列表视图" aria-pressed="false"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></div></div>
+<div class="keyword-heading"><span id="keyword-selection">可组合勾选；同时包含全部所选关键词</span><button id="clear-keywords" type="button">清除关键词</button></div><div class="filter-row"><div class="keyword-options" id="filters" role="group" aria-label="关键词组合筛选" aria-description="按信号、数据资源、AI 模型与方法分组；勾选后显示同时匹配的论文。"></div><div class="layout-toggle" aria-label="显示方式"><button class="active" id="grid-view" aria-label="卡片视图" aria-pressed="true">▦</button><button id="list-view" aria-label="列表视图" aria-pressed="false"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button></div></div>
 <div class="demo-banner" id="demo-banner" hidden><span><strong>先逛逛示例书架</strong>　以下为演示内容，不计入你的阅读记录。</span><button data-open-add>添加我的第一篇论文 ↗</button></div>
 <div id="papers" class="paper-grid" aria-live="polite"></div>
 <div class="empty" id="empty" hidden><span>⌕</span><h3>还没有找到这篇论文</h3><p>换个关键词，或者清除筛选再看看。</p><button class="secondary" id="clear-filters">清除筛选</button></div>
@@ -63,7 +64,8 @@
   <div class="upload-cover-row"><img id="upload-preview" alt="待上传论文的首页封面预览" hidden><div><p id="cover-status" class="form-hint">选择 PDF 后自动生成首页封面。</p><details><summary>选择其他封面</summary><label>PNG 或 JPG<input type="file" id="upload-cover" accept="image/png,image/jpeg"></label></details></div></div>
   <label>论文标题 <span>*</span><input name="title" required maxlength="250" placeholder="论文的原始标题"></label>
   <div class="form-row"><label>作者<input name="authors" maxlength="200" placeholder="例如：Smith et al."></label><label>发表年份<input name="year" type="number" min="1600" max="2100" placeholder="2026"></label></div>
-  <div class="form-row"><label>期刊 / 会议<input name="venue" maxlength="120" placeholder="期刊、会议或预印本版本"></label><label>关键词<input name="keywords" required maxlength="400" placeholder="例如：眼动、事件记忆"></label></div>
+  <div class="form-row"><label>期刊 / 会议<input name="venue" maxlength="120" placeholder="期刊、会议或预印本版本"></label><label>关键词<input name="keywords" required maxlength="400" placeholder="例如：fMRI、LLM、编码模型"></label></div>
+  <p class="form-hint">按信号（EEG / fMRI / ECoG / 眼动）、AI 模型（JEPA / LLM）和核心方法填写。新发布或公开数据集时加「有数据集」；多个关键词用顿号或逗号分隔。</p>
   <label>期刊 / DOI 链接<input name="url" type="url" placeholder="https://doi.org/…"></label>
   <label>一句话收获<input name="summary" maxlength="400" placeholder="这篇论文给你最重要的启发是什么？"></label>
   <label>阅读笔记<textarea name="notes" rows="3" maxlength="5000" placeholder="研究问题、方法、结论，以及你自己的想法…"></textarea></label>

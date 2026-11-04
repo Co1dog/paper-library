@@ -1,6 +1,7 @@
-import {mergePapers,fromBase64,DRAFT_KEY} from './upload-core.js?v=keywords-20261103';
-import {paperKeywords,matchesPaper} from './search-core.js?v=keywords-20261103';
-import {setupUploader} from './upload.js?v=keywords-20261103';
+import {openReader} from './reader.js?v=reading-room-20261104-v2';
+import {mergePapers,fromBase64,DRAFT_KEY} from './upload-core.js?v=reading-room-20261104-v2';
+import {paperKeywords,matchesPaper,keywordGroup,KEYWORD_GROUPS} from './search-core.js?v=reading-room-20261104-v2';
+import {setupUploader} from './upload.js?v=reading-room-20261104-v2';
 'use strict';
 const OWNER = 'Co1dog';
 const REPO = 'paper-library';
@@ -38,7 +39,7 @@ function keywordControls(){
  const tags=[...new Set(getSource().flatMap(paperKeywords))].sort((a,b)=>a.localeCompare(b,'zh-CN'));
  const host=$('filters'),signature=JSON.stringify(tags);
  if(host.dataset.signature!==signature){
-  host.innerHTML=tags.map(tag=>`<label class="keyword-choice"><input type="checkbox" data-keyword="${escapeHTML(tag)}"><span>${escapeHTML(tag)}</span></label>`).join('');host.dataset.signature=signature;
+  host.innerHTML=KEYWORD_GROUPS.map(group=>{const members=tags.filter(tag=>keywordGroup(tag)===group);return members.length?`<fieldset class="keyword-group"><legend>${escapeHTML(group)}</legend><div>${members.map(tag=>`<label class="keyword-choice"><input type="checkbox" data-keyword="${escapeHTML(tag)}"><span>${escapeHTML(tag)}</span></label>`).join('')}</div></fieldset>`:'';}).join('');host.dataset.signature=signature;
  }
  host.querySelectorAll('[data-keyword]').forEach(input=>{input.checked=activeKeywords.has(input.dataset.keyword);input.closest('label').classList.toggle('is-selected',input.checked);});
  $('keyword-selection').textContent=activeKeywords.size?'同时包含：'+[...activeKeywords].join(' + '):'可组合勾选；同时包含全部所选关键词';
@@ -70,25 +71,22 @@ function render(){
 }
 function detail(id){
  const p=getSource().find(x=>String(x.id)===id);if(!p)return;
- const url=safeURL(p.url),pdf=safeURL(p.pdfURL),reading=safeURL(p.readingURL),issue=safeURL(p.issueURL);
- const original=pdf||url;
- $('detail-content').innerHTML=`<div class="detail-source">${isDemo?'示例文献':'来自我的书架'}</div><h2 class="detail-title">${escapeHTML(p.title)}</h2><div class="detail-meta">${escapeHTML(p.authors||'作者待补充')}<br>${escapeHTML(p.venue||'期刊待补充')} ${p.year?' / '+p.year:''}<br><span class="paper-keywords">${paperKeywords(p).map(tag=>`<span class="keyword-tag">${escapeHTML(tag)}</span>`).join('')}</span>　阅读于 ${escapeHTML(p.readDate)} ${p.favorite?' · 重点收藏':''}</div>${p.summary?`<div class="detail-summary">${escapeHTML(p.summary)}</div>`:''}<h3 class="notes-heading">READING NOTES / 阅读笔记</h3><div class="detail-notes">${escapeHTML(p.notes||'还没有笔记。可以在 GitHub 中补充你的想法。')}</div><div class="detail-actions">${original?`<a class="primary" href="${escapeHTML(original)}" target="_blank" rel="noopener noreferrer">${pdf?'阅读原文 PDF':'打开原文'} ↗</a>`:''}${reading?`<a class="secondary" href="${escapeHTML(reading)}" target="_blank" rel="noopener noreferrer">打开中文解读 ↗</a>`:''}${pdf&&url&&pdf!==url?`<a class="secondary" href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer">期刊页面 ↗</a>`:''}${issue?`<a class="secondary" href="${escapeHTML(issue)}" target="_blank" rel="noopener noreferrer">在 GitHub 编辑 ↗</a>`:''}</div>${isDemo?'<div class="detail-demo">这是设计示例，不是真实文献条目。添加你的第一篇论文后，书架会显示自己的阅读记录。</div>':''}`;
- showDialog($('detail-dialog'));
+ openReader(p,{isDemo,showDialog});
 }
 function normalizePaper(raw,issue){
  if(!raw||typeof raw!=='object'||typeof raw.title!=='string'||!raw.title.trim())return null;
  const keywords=paperKeywords(raw);if(!keywords.length)return null;
  const text=(key,max)=>typeof raw[key]==='string'?raw[key].slice(0,max):'';
  const readDate=/^\d{4}-\d{2}-\d{2}$/.test(raw.readDate||'')&&!isNaN(Date.parse(raw.readDate))?raw.readDate:issue.created_at.slice(0,10);
- return {id:String(raw.id||issue.number),title:text('title',250),keywords,topic:keywords.join('、'),authors:text('authors',200),venue:text('venue',120),year:Number.isInteger(raw.year)&&raw.year>=1600&&raw.year<=2100?raw.year:null,url:safeURL(raw.url),pdfURL:safeURL(raw.pdfURL),readingURL:safeURL(raw.readingURL),coverURL:safeURL(raw.coverURL),summary:text('summary',400),notes:text('notes',5000),favorite:raw.favorite===true,readDate,issueURL:issue.html_url,pdfSHA256:text('pdfSHA256',64)};
+ return {id:String(raw.id||issue.number),title:text('title',250),keywords,topic:keywords.join('、'),authors:text('authors',200),venue:text('venue',120),year:Number.isInteger(raw.year)&&raw.year>=1600&&raw.year<=2100?raw.year:null,url:safeURL(raw.url),pdfURL:safeURL(raw.pdfURL),readingURL:safeURL(raw.readingURL),coverURL:safeURL(raw.coverURL),summary:text('summary',400),searchTerms:text('searchTerms',400),notes:text('notes',5000),favorite:raw.favorite===true,readDate,issueURL:issue.html_url,pdfSHA256:text('pdfSHA256',64)};
 }
 async function loadPapers(){
  if(busy)return;busy=true;$('refresh').disabled=true;$('cloud-status').classList.remove('error');$('cloud-status').textContent='正在读取书架';$('notice').hidden=true;
- const warnings=[];let catalog=null,issues=null;
+ const warnings=[];let catalog=null,issues=null,keywordSchema=0;
  try{
   const local=await fetch('./papers/library.json',{cache:'no-store',signal:AbortSignal.timeout(15000)});
   if(local.ok){const data=await local.json();if(data.version===1&&Array.isArray(data.papers)){
-   catalog=data.papers;
+   catalog=data.papers;keywordSchema=data.keywordSchema||0;
    papers=mergePapers([...pendingRecords.values()],catalog.filter(p=>p&&typeof p==='object').map(p=>normalizePaper(p,{number:p.id,created_at:'2026-11-03',html_url:p.issueURL||''})).filter(Boolean));
    isDemo=!papers.length;render();
   }}
@@ -97,7 +95,7 @@ async function loadPapers(){
   const remote=await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/papers/library.json?ref=main&t=${Date.now()}`,{cache:'no-store',headers:{Accept:'application/vnd.github+json'},signal:AbortSignal.timeout(15000)});
   if(remote.ok){const data=await remote.json();const parsed=JSON.parse(new TextDecoder().decode(fromBase64(data.content)));if(parsed.version===1&&Array.isArray(parsed.papers)){
    const published=new Map((catalog||[]).map(p=>[p.id,p]));
-   catalog=parsed.papers.map(p=>({...p,keywords:p.keywords?.length?p.keywords:published.get(p.id)?.keywords}));
+   catalog=parsed.papers.map(p=>{const local=published.get(p.id);return local&&keywordSchema>(parsed.keywordSchema||0)?{...p,keywords:local.keywords,topic:local.topic,searchTerms:local.searchTerms}:{...p,keywords:p.keywords?.length?p.keywords:local?.keywords};});
   }}
   else if(!catalog)warnings.push('云端目录暂时无法读取。');
  }catch{if(!catalog)warnings.push('云端目录连接待恢复。');}

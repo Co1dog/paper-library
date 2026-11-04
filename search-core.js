@@ -8,11 +8,11 @@ const VOCABULARY = [
  ['神经重现','neural reinstatement','reactivation','再激活'],
  ['海马','hippocampus','hippocampal'],
  ['语言理解','language comprehension','language understanding'],
- ['语言模型','language model','language models','large language model','LLM','LLMs'],
+ ['LLM','语言模型','大语言模型','language model','language models','large language model','LLMs'],
  ['表示学习','representation learning','representational learning'],
  ['跨模态对齐','cross modal alignment','cross-modal alignment','multimodal alignment'],
  ['推理','reasoning','reason'],
- ['数据集','dataset','datasets'],
+ ['有数据集','数据集','新数据集','dataset','datasets','has dataset'],
  ['编码模型','encoding model','encoding models'],
  ['分析方法','analysis method','analysis methods'],
  ['fMRI','functional magnetic resonance imaging','功能磁共振'],
@@ -20,7 +20,8 @@ const VOCABULARY = [
  ['EEG','electroencephalography','脑电'],
  ['ISC','intersubject correlation','inter-subject correlation','被试间相关'],
  ['ISFC','intersubject functional correlation','被试间功能相关'],
- ['NeuroAI','神经人工智能'],['JEPA','joint embedding predictive architecture'],
+ ['MEG','magnetoencephalography','脑磁'],['HMM','hidden markov model','隐马尔可夫模型'],
+ ['脑引导','brain guided','brain-guided'],['NeuroAI','神经人工智能'],['JEPA','joint embedding predictive architecture'],
 ];
 export const fold = value => String(value??'').normalize('NFKD').replace(/\p{M}/gu,'').toLowerCase()
  .replace(/[‐‑–—_-]/g,' ').replace(/\s+/g,' ').trim();
@@ -53,7 +54,7 @@ function queryTerms(query) {
 }
 export function searchText(paper) {
  if(textCache.has(paper))return textCache.get(paper);
- const text=fold([paper.title,paper.authors,paper.venue,paper.summary,paper.notes,paper.year,...paperKeywords(paper)].join(' '));
+ const text=fold([paper.title,paper.authors,paper.venue,paper.summary,paper.notes,paper.searchTerms,paper.year,...paperKeywords(paper)].join(' '));
  const aliases=VOCABULARY.filter(group=>group.some(alias=>contains(text,fold(alias)))).flat();
  const result=text+' '+fold(aliases.join(' '));textCache.set(paper,result);return result;
 }
@@ -64,4 +65,14 @@ export function matchesPaper(paper,query='',selected=[]) {
  if(!terms.length)return true;
  const text=searchText(paper);
  return terms.every(term=>text.includes(term));
+}
+
+// Facets describe evidence and methods; free text remains searchable separately.
+export const KEYWORD_GROUPS=['信号 / 测量','数据资源','AI 模型','方法 / 重点'];
+export function keywordGroup(tag){
+ const key=canonical.get(fold(tag))||tag;
+ if(['EEG','fMRI','ECoG','MEG','眼动'].includes(key))return KEYWORD_GROUPS[0];
+ if(key==='有数据集')return KEYWORD_GROUPS[1];
+ if(['JEPA','LLM','VLM','CNN','Transformer','扩散模型'].includes(key))return KEYWORD_GROUPS[2];
+ return KEYWORD_GROUPS[3];
 }
