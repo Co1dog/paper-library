@@ -1,7 +1,8 @@
-import {openReader} from './reader.js?v=scroll-notes-20261105b';
-import {mergePapers,fromBase64,DRAFT_KEY} from './upload-core.js?v=scroll-notes-20261105b';
-import {paperKeywords,matchesPaper,keywordGroup,KEYWORD_GROUPS} from './search-core.js?v=scroll-notes-20261105b';
-import {setupUploader} from './upload.js?v=scroll-notes-20261105b';
+import {warmReader} from './reader-preload.js?v=cloud-fast-20261105-v4';
+import {openReader} from './reader.js?v=cloud-fast-20261105-v4';
+import {mergePapers,fromBase64,DRAFT_KEY} from './upload-core.js?v=cloud-fast-20261105-v4';
+import {paperKeywords,matchesPaper,keywordGroup,KEYWORD_GROUPS} from './search-core.js?v=cloud-fast-20261105-v4';
+import {setupUploader} from './upload.js?v=cloud-fast-20261105-v4';
 'use strict';
 const OWNER = 'Co1dog';
 const REPO = 'paper-library';
@@ -46,7 +47,8 @@ function keywordControls(){
  $('clear-keywords').disabled=!activeKeywords.size;
  $('search-indicator').hidden=!activeKeywords.size&&!$('search').value.trim();
 }
-function updateCarousel(found){window.dispatchEvent(new CustomEvent('paper-library:update',{detail:{papers:found.map(p=>coverPreviews.has(p.id)?{...p,coverURL:coverPreviews.get(p.id)}:p),isDemo}}));}
+let displayedPapers=[];
+function updateCarousel(found){displayedPapers=found;window.dispatchEvent(new CustomEvent('paper-library:update',{detail:{papers:found.map(p=>coverPreviews.has(p.id)?{...p,coverURL:coverPreviews.get(p.id)}:p),isDemo}}));}
 window.addEventListener('paper-library:carousel-ready',render);
 window.addEventListener('paper-library:open',event=>detail(String(event.detail?.id||'')));
 function render(){
@@ -78,7 +80,7 @@ function normalizePaper(raw,issue){
  const keywords=paperKeywords(raw);if(!keywords.length)return null;
  const text=(key,max)=>typeof raw[key]==='string'?raw[key].slice(0,max):'';
  const readDate=/^\d{4}-\d{2}-\d{2}$/.test(raw.readDate||'')&&!isNaN(Date.parse(raw.readDate))?raw.readDate:issue.created_at.slice(0,10);
- return {id:String(raw.id||issue.number),title:text('title',250),keywords,topic:keywords.join('、'),authors:text('authors',200),venue:text('venue',120),year:Number.isInteger(raw.year)&&raw.year>=1600&&raw.year<=2100?raw.year:null,url:safeURL(raw.url),pdfURL:safeURL(raw.pdfURL),readingURL:safeURL(raw.readingURL),coverURL:safeURL(raw.coverURL),summary:text('summary',400),searchTerms:text('searchTerms',400),notes:text('notes',5000),favorite:raw.favorite===true,readDate,issueURL:issue.html_url,pdfSHA256:text('pdfSHA256',64)};
+ return {id:String(raw.id||issue.number),title:text('title',250),keywords,topic:keywords.join('、'),authors:text('authors',200),venue:text('venue',120),year:Number.isInteger(raw.year)&&raw.year>=1600&&raw.year<=2100?raw.year:null,url:safeURL(raw.url),pdfURL:safeURL(raw.pdfURL),readingURL:safeURL(raw.readingURL),readerURL:safeURL(raw.readerURL),coverURL:safeURL(raw.coverURL),summary:text('summary',400),searchTerms:text('searchTerms',400),notes:text('notes',5000),favorite:raw.favorite===true,readDate,issueURL:issue.html_url,pdfSHA256:text('pdfSHA256',64)};
 }
 async function loadPapers(){
  if(busy)return;busy=true;$('refresh').disabled=true;$('cloud-status').classList.remove('error');$('cloud-status').textContent='正在读取书架';$('notice').hidden=true;
@@ -95,7 +97,7 @@ async function loadPapers(){
   const remote=await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/papers/library.json?ref=main&t=${Date.now()}`,{cache:'no-store',headers:{Accept:'application/vnd.github+json'},signal:AbortSignal.timeout(15000)});
   if(remote.ok){const data=await remote.json();const parsed=JSON.parse(new TextDecoder().decode(fromBase64(data.content)));if(parsed.version===1&&Array.isArray(parsed.papers)){
    const published=new Map((catalog||[]).map(p=>[p.id,p]));
-   catalog=parsed.papers.map(p=>{const local=published.get(p.id);return local&&keywordSchema>(parsed.keywordSchema||0)?{...p,keywords:local.keywords,topic:local.topic,searchTerms:local.searchTerms}:{...p,keywords:p.keywords?.length?p.keywords:local?.keywords};});
+   catalog=parsed.papers.map(p=>{const local=published.get(p.id);return local&&keywordSchema>(parsed.keywordSchema||0)?{...p,keywords:local.keywords,topic:local.topic,searchTerms:local.searchTerms,readerURL:local.readerURL}:{...p,keywords:p.keywords?.length?p.keywords:local?.keywords,readerURL:p.readerURL||local?.readerURL};});
   }}
   else if(!catalog)warnings.push('云端目录暂时无法读取。');
  }catch{if(!catalog)warnings.push('云端目录连接待恢复。');}
@@ -175,3 +177,11 @@ render();loadPapers();
 // The exhibition and utility drawer share one display mode and current selection.
 document.querySelectorAll('[data-gallery-view]').forEach(button=>button.addEventListener('click',()=>{window.dispatchEvent(new CustomEvent('paper-library:display',{detail:button.dataset.galleryView}));$('menu-dialog').close();}));
 $('selection-open').addEventListener('click',()=>window.dispatchEvent(new Event('paper-library:open-current')));
+
+// Warm code and light commentary only when the user points at a paper.
+for(const type of ['pointerover','focusin'])document.addEventListener(type,event=>{
+ const card=event.target.closest('.depth-carousel__card'),title=event.target.closest('.exhibition-title-link'),detail=event.target.closest('[data-detail]');
+ if(card)warmReader(displayedPapers[Number(card.dataset.paperIndex)]);
+ else if(title)warmReader(displayedPapers[Number(document.querySelector('.depth-carousel')?.dataset.activeIndex||0)]);
+ else if(detail)warmReader(getSource().find(p=>p.id===detail.dataset.detail));
+});

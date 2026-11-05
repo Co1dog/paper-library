@@ -1,8 +1,10 @@
 // GitHub stores files and their catalog record in one commit. No server or stored secret.
-import {normalizeKeywords} from './search-core.js?v=scroll-notes-20261105b';
+import {emptyAnnotations,validPaperId,validateAnnotations,mergeAnnotations} from './annotation-core.js?v=cloud-fast-20261105-v4';
+import {normalizeKeywords} from './search-core.js?v=cloud-fast-20261105-v4';
 export const OWNER = 'Co1dog';
 export const REPO = 'paper-library';
 export const BRANCH = 'main';
+export const NOTES_BRANCH = 'reading-notes';
 export const CATALOG = 'papers/library.json';
 export const DRAFT_KEY = 'paper-library-upload-draft-v2';
 export const SITE = 'https://co1dog.github.io/paper-library/';
@@ -50,17 +52,18 @@ export function validateRecord(raw) {
 export class GitHubLibrary {
   #token = '';
   #fetch;
+  #notesReady=null;
   constructor(fetcher = globalThis.fetch.bind(globalThis)) { this.#fetch = fetcher; }
   get connected() { return Boolean(this.#token); }
   disconnect() { this.#token = ''; }
-  async #request(path, {method='GET', body, missing=false} = {}) {
-    if (!this.#token) throw new Error('请先连接书架账号。');
+  async #request(path, {method='GET', body, missing=false,publicRead=false,timeout=240000} = {}) {
+    if (!this.#token&&!publicRead) throw new Error('请先连接书架账号。');
     let response;
     try {
       response = await this.#fetch(API + path, {method, cache:'no-store', redirect:'error',
-        headers:{Accept:'application/vnd.github+json',Authorization:`Bearer ${this.#token}`,
+        headers:{Accept:'application/vnd.github+json',...(this.#token?{Authorization:`Bearer ${this.#token}`} : {}),
           'X-GitHub-Api-Version':'2022-11-28',...(body?{'Content-Type':'application/json'}:{})},
-        ...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(240000)});
+        ...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(timeout)});
     } catch { throw new Error('网络连接中断。若在最后一步中断，请刷新书架确认是否已保存后再重试。'); }
     if (missing && response.status === 404) return null;
     if (!response.ok) {
@@ -83,6 +86,37 @@ export class GitHubLibrary {
       if(repo.owner?.login?.toLowerCase()!==OWNER.toLowerCase()||repo.name!==REPO||!repo.permissions?.push) throw new Error('这个授权没有 Co1dog/paper-library 的写入权限。');
       return {owner:OWNER,repository:REPO};
     } catch(error) { this.disconnect(); throw error; }
+  }
+  async readAnnotations(paperId){
+    if(!validPaperId(paperId))throw new Error('论文标识不正确。');
+    const file=await this.#request(`/contents/annotations/${paperId}.json?ref=${NOTES_BRANCH}&t=${Date.now()}`,{missing:true,publicRead:true,timeout:12000});
+    if(!file)return {snapshot:emptyAnnotations(paperId),sha:null};
+    let value;try{value=JSON.parse(new TextDecoder().decode(fromBase64(file.content)));}catch{throw new Error('云端笔记无法解析，已保留本地记录。');}
+    return {snapshot:validateAnnotations(value,paperId),sha:file.sha};
+  }
+  async #ensureNotesBranch(){
+    if(this.#notesReady)return this.#notesReady;
+    this.#notesReady=(async()=>{
+      if(await this.#request(`/git/ref/heads/${NOTES_BRANCH}`,{missing:true}))return;
+      const main=await this.#request(`/git/ref/heads/${BRANCH}`);
+      try{await this.#request('/git/refs',{method:'POST',body:{ref:`refs/heads/${NOTES_BRANCH}`,sha:main.object.sha}});}
+      catch(error){if(error.status!==422||!await this.#request(`/git/ref/heads/${NOTES_BRANCH}`,{missing:true}))throw error;}
+    })();
+    try{await this.#notesReady;}catch(error){this.#notesReady=null;throw error;}
+  }
+  async saveAnnotations(paperId,base,draft){
+    if(!this.connected)throw new Error('请先连接书架账号。');
+    validateAnnotations(draft,paperId);await this.#ensureNotesBranch();let remote=await this.readAnnotations(paperId);
+    for(let attempt=0;attempt<3;attempt++){
+      const {snapshot,conflicts}=mergeAnnotations(base,draft,remote.snapshot);
+      try{
+        const result=await this.#request(`/contents/annotations/${paperId}.json`,{method:'PUT',body:{message:`Sync reading notes: ${paperId}`,content:toBase64(new TextEncoder().encode(JSON.stringify(snapshot,null,2)+'\n')),branch:NOTES_BRANCH,...(remote.sha?{sha:remote.sha}:{})}});
+        return {snapshot,conflicts,sha:result.content.sha,commit:result.commit.sha};
+      }catch(error){
+        if(![409,422].includes(error.status)||attempt===2)throw error;
+        remote=await this.readAnnotations(paperId);
+      }
+    }
   }
   async #snapshot() {
     const ref=await this.#request(`/git/ref/heads/${BRANCH}`);

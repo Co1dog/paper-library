@@ -22,3 +22,8 @@ export function pdfAnchor(layout,offset){
  return item?{index,fraction:Math.max(0,Math.min(1,(offset-item.top)/item.height))}:{index:0,fraction:0};
 }
 export function pdfAnchorOffset(layout,anchor){const item=layout[anchor.index];return item?item.top+anchor.fraction*item.height:0;}
+
+export async function seedPDFSizes(doc){
+ const first=await doc.getPage(1),view=first.getViewport({scale:1});
+ return Array.from({length:doc.numPages},()=>({width:view.width,height:view.height}));
+}

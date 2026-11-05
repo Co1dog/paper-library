@@ -27,3 +27,7 @@ The exhibition layout, blended title treatment, and Wheel / List interaction ref
 # PDF.js
 
 The original-PDF upload preview uses Mozilla PDF.js (`pdfjs-dist` 5.4.530), vendored in `assets/vendor/pdfjs/`. Source: https://github.com/mozilla/pdf.js . License: Apache-2.0; the complete license is preserved beside the bundled module and worker. PDF files are rendered locally in the browser to create a first-page cover.
+
+## KaTeX in the lightweight reading views
+
+The existing reading documents' KaTeX 0.16.11 scripts, styles and fonts are split into cacheable files under assets/reading/. The upstream project license is included as assets/reading/LICENSE-KaTeX.txt. Original paper images are extracted byte-for-byte from the reading documents; their original attribution and licensing text remain in those documents.

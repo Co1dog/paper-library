@@ -1,8 +1,9 @@
-import {GitHubLibrary, validateFiles, validateRecord, DRAFT_KEY} from './upload-core.js?v=scroll-notes-20261105b';
+import {githubClient as client,connectGitHub,disconnectGitHub,onGitHubConnection} from './github-session.js?v=cloud-fast-20261105-v4';
+import {validateFiles, validateRecord, DRAFT_KEY} from './upload-core.js?v=cloud-fast-20261105-v4';
 
 export function setupUploader({onSaved}) {
   const $=id=>document.getElementById(id);
-  const client=new GitHubLibrary();
+  let returnTarget='add';
   const form=$('add-form');
   const pdf=$('upload-pdf'),reading=$('upload-reading'),customCover=$('upload-cover');
   let previewURL='',generation=0,coverBytes=null,working=false;
@@ -31,19 +32,23 @@ export function setupUploader({onSaved}) {
     const input=$('github-token');
     const value=input.value;input.value='';$('account-error').textContent='';
     $('account-connect').disabled=true;
-    try {await client.connect(value);$('account-status').textContent='已连接 Co1dog / paper-library';}
+    try {await connectGitHub(value);if(returnTarget==='reader')$('connection-dialog').close();$('account-status').textContent='已连接 Co1dog / paper-library';}
     catch(error){$('account-error').textContent=error.message;}
     finally{$('account-connect').disabled=false;state();}
   });
-  $('account-disconnect').addEventListener('click',()=>{client.disconnect();state();});
+  $('account-disconnect').addEventListener('click',()=>{disconnectGitHub();state();});
+  onGitHubConnection(state);
+  window.addEventListener('paper-library:connect',()=>{returnTarget='reader';$('account-return').textContent='返回阅读';$('connection-dialog').showModal();});
   $('connection-open').addEventListener('click',()=>{
+    returnTarget='add';$('account-return').textContent='返回上传';
     $('menu-dialog').close();$('connection-dialog').showModal();
   });
   $('upload-connect-open').addEventListener('click',()=>{
+    returnTarget='add';$('account-return').textContent='返回上传';
     $('add-dialog').close();$('connection-dialog').showModal();
   });
   $('account-return').addEventListener('click',()=>{
-    $('connection-dialog').close();$('add-dialog').showModal();
+    $('connection-dialog').close();if(returnTarget==='add')$('add-dialog').showModal();
   });
   $('github-token').addEventListener('keydown',event=>{
     if(event.key==='Enter'){event.preventDefault();$('account-connect').click();}

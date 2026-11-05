@@ -7,9 +7,9 @@
 <title>Paper Library · 我的论文书架</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" href="./assets/fonts/anthropic-serif-roman.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css?v=scroll-notes-20261105b"><link rel="stylesheet" href="./assets/arc-gallery.css?v=scroll-notes-20261105b">
-<script type="module" src="./app.js?v=scroll-notes-20261105b"></script><script type="module" src="./assets/arc-gallery.js?v=scroll-notes-20261105b"></script>
-<link rel="stylesheet" href="./reader.css?v=scroll-notes-20261105b">
+<link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css?v=cloud-fast-20261105-v4"><link rel="stylesheet" href="./assets/arc-gallery.css?v=cloud-fast-20261105-v4">
+<script type="module" src="./app.js?v=cloud-fast-20261105-v4"></script><script type="module" src="./assets/arc-gallery.js?v=cloud-fast-20261105-v4"></script>
+<link rel="stylesheet" href="./reader.css?v=cloud-fast-20261105-v4">
 </head>
 <body>
 <a class="skip" href="#main">跳到论文书架</a>
@@ -78,10 +78,10 @@
 </dialog>
 <dialog id="connection-dialog" aria-labelledby="connection-title">
  <button class="close" data-close aria-label="关闭书架连接">×</button><h2 id="connection-title">连接你的书架。</h2>
- <p class="dialog-intro">为 Co1dog / paper-library 授权后，即可在本站上传。授权仅在当前页面内存中使用，刷新或关闭页面后需要重新连接。</p>
+ <p class="dialog-intro">为 Co1dog / paper-library 授权后，即可在本站上传并自动同步笔记。笔记会随公开书架保存到 GitHub。授权仅在当前页面内存中使用，刷新或关闭页面后需要重新连接。</p>
  <ol class="connection-steps"><li>在 GitHub 创建 fine-grained personal access token，Resource owner 选择 Co1dog。</li><li>Repository access 只选择 paper-library，将 Contents 设为 Read and write。Metadata 保持默认只读。</li><li>把授权码粘贴到下方，点击连接。不要把它发送到聊天中。</li></ol>
  <a class="secondary" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">在 GitHub 创建授权 ↗</a>
- <div class="connection-fields"><label for="github-token">本次上传授权码</label><input id="github-token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…" aria-describedby="token-privacy"><p id="token-privacy" class="form-hint">仅发送到 GitHub API，不保存到浏览器存储或仓库。</p></div>
+ <div class="connection-fields"><label for="github-token">本次书架授权码</label><input id="github-token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…" aria-describedby="token-privacy"><p id="token-privacy" class="form-hint">仅发送到 GitHub API，不保存到浏览器存储或仓库。</p></div>
  <p id="account-status" role="status">尚未连接书架</p><p id="account-error" class="form-error" role="alert"></p>
  <div class="connection-actions"><button id="account-connect" class="primary">连接书架</button><button id="account-disconnect" class="secondary" hidden>断开连接</button><button id="account-return" class="secondary">返回上传</button></div>
 </dialog>

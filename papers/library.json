@@ -23,7 +23,8 @@
         "有数据集",
         "HMM"
       ],
-      "searchTerms": "眼动、事件记忆、神经重现、fMRI、自然叙事"
+      "searchTerms": "眼动、事件记忆、神经重现、fMRI、自然叙事",
+      "readerURL": "https://co1dog.github.io/paper-library/papers/nau-2025/view.html"
     },
     {
       "id": "nastase-2021-narratives",
@@ -46,7 +47,8 @@
         "有数据集",
         "ISC"
       ],
-      "searchTerms": "自然叙事、fMRI、语言理解、数据集、ISC"
+      "searchTerms": "自然叙事、fMRI、语言理解、数据集、ISC",
+      "readerURL": "https://co1dog.github.io/paper-library/papers/nastase-2021-narratives/view.html"
     },
     {
       "id": "zada-2025-podcast",
@@ -70,7 +72,8 @@
         "LLM",
         "编码模型"
       ],
-      "searchTerms": "自然叙事、ECoG、语言理解、数据集、编码模型"
+      "searchTerms": "自然叙事、ECoG、语言理解、数据集、编码模型",
+      "readerURL": "https://co1dog.github.io/paper-library/papers/zada-2025-podcast/view.html"
     },
     {
       "id": "chen-2016-episodic",
@@ -94,7 +97,8 @@
         "ISFC",
         "情景记忆"
       ],
-      "searchTerms": "事件记忆、情景记忆、自然叙事、海马、fMRI、ISC"
+      "searchTerms": "事件记忆、情景记忆、自然叙事、海马、fMRI、ISC",
+      "readerURL": "https://co1dog.github.io/paper-library/papers/chen-2016-episodic/view.html"
     },
     {
       "id": "nastase-2019-isc",
@@ -117,7 +121,8 @@
         "ISC",
         "ISFC"
       ],
-      "searchTerms": "ISC、ISFC、fMRI、分析方法"
+      "searchTerms": "ISC、ISFC、fMRI、分析方法",
+      "readerURL": "https://co1dog.github.io/paper-library/papers/nastase-2019-isc/view.html"
     },
     {
       "id": "balestriero-2026-jepa",
@@ -140,7 +145,8 @@
         "表示学习",
         "跨模态对齐"
       ],
-      "searchTerms": "NeuroAI、表示学习、JEPA、跨模态对齐"
+      "searchTerms": "NeuroAI、表示学习、JEPA、跨模态对齐",
+      "readerURL": "https://co1dog.github.io/paper-library/papers/balestriero-2026-jepa/view.html"
     },
     {
       "id": "xiao-2026-brain-guided",
@@ -164,7 +170,8 @@
         "脑引导",
         "推理"
       ],
-      "searchTerms": "NeuroAI、推理、语言模型、fMRI"
+      "searchTerms": "NeuroAI、推理、语言模型、fMRI",
+      "readerURL": "https://co1dog.github.io/paper-library/papers/xiao-2026-brain-guided/view.html"
     }
   ],
   "keywordSchema": 2

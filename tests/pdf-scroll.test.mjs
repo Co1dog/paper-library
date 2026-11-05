@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {pdfLayout,pdfPageAt,pdfWindow,pdfAnchor,pdfAnchorOffset} from '../pdf-scroll-core.js';
+import {pdfLayout,pdfPageAt,pdfWindow,pdfAnchor,pdfAnchorOffset,seedPDFSizes} from '../pdf-scroll-core.js';
 const portrait={width:600,height:800};
 test('continuous layout preserves mixed page sizes and vertical gaps',()=>{
  const layout=pdfLayout([portrait,{width:800,height:600},portrait],600);
@@ -23,4 +23,9 @@ test('long documents render nearby pages instead of allocating all canvases',()=
   }
  }
  assert.deepEqual(pdfWindow([],0,800),[]);
+});
+
+test('first layout does not wait for metadata from the rest of a long PDF',async()=>{
+ const calls=[];const sizes=await seedPDFSizes({numPages:63,getPage:async n=>{calls.push(n);return {getViewport:()=>({width:600,height:800})};}});
+ assert.deepEqual(calls,[1]);assert.equal(sizes.length,63);assert.deepEqual(sizes[62],{width:600,height:800});
 });

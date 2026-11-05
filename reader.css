@@ -35,3 +35,6 @@
 @media(max-width:640px){.reading-room{grid-template-rows:56px minmax(0,1fr)}.reader-header{padding:0 16px;gap:20px}.reader-brand{font-size:16px}.reader-brand>span{display:none}.reader-back,.reader-info-toggle{font-size:12px}.reader-main{grid-template-rows:54px minmax(0,1fr)}.reader-navigation{padding:0 16px;gap:8px}.reader-tabs{gap:20px}.reader-tabs button{min-width:65px;font-size:14px}.reader-navigation>a{font-size:11px}.pdf-controls{padding:0 10px;gap:5px}.pdf-pagination,.pdf-zoom{gap:3px}.pdf-pagination>span{min-width:30px}.pdf-viewport{padding:24px}.reader-info{padding:24px}.info-open .reader-info{top:56px}}
 
 @media(max-width:640px){.pdf-scroll-hint{margin-left:3px;font-size:11px}.notes-controls{padding:6px 14px;gap:4px 12px;flex-wrap:wrap}.notes-controls>span{order:3;width:100%;font-size:11px}.notes-controls button{min-height:38px}.notes-controls button:last-child{margin-left:auto}}
+
+.notes-controls{flex-wrap:wrap;gap:6px 14px}.notes-controls>span{flex:1;min-width:180px}.notes-controls #notes-cloud{color:#eee;border-bottom:1px solid #666}.notes-controls button:last-child{margin-left:0}
+@media(max-width:640px){.notes-controls>span{min-width:0}.notes-controls #notes-download{font-size:11px}}
