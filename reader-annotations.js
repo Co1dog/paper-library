@@ -1,5 +1,6 @@
 import {AnnotationSync} from './annotation-sync.js?v=cloud-fast-20261105-v4';
 import {githubClient,onGitHubConnection} from './github-session.js?v=cloud-fast-20261105-v4';
+import {connectReadingTools} from './reader-tools.js?v=reader-tools-20261105';
 // Adapt the existing XRAY annotator without rewriting its source or storage keys.
 export function connectAnnotations(frame,{toggle,download,status,filename,paperId,cloudButton,originalURL}){
  let win,doc;
@@ -39,6 +40,7 @@ export function connectAnnotations(frame,{toggle,download,status,filename,paperI
   }catch{status.textContent='下载未完成，请重试或在新窗口打开解读。';}
  };
  toggle.disabled=false;download.disabled=false;doc.documentElement.dataset.libraryReader='true';
+ const stopTools=connectReadingTools(doc);
  // Online reading starts ready to annotate; this button also controls the old pen.
  if(!doc.body.classList.contains('xr-annot'))pen.click();
  on(toggle,'click',()=>{pen.click();update();});
@@ -62,5 +64,5 @@ export function connectAnnotations(frame,{toggle,download,status,filename,paperI
  on(doc,'input',event=>{if(event.target.matches('.xr-card textarea'))update();});
  const observer=new win.MutationObserver(()=>queueMicrotask(update));observer.observe(doc.querySelector('main'),{childList:true,subtree:true});
  update();cloud.pull();
- return ()=>{cloud.close();stopConnection();clearInterval(poll);events.abort();observer.disconnect();win.cancelAnimationFrame(frameID);if(save)save.onclick=oldSave;};
+ return ()=>{cloud.close();stopConnection();stopTools();clearInterval(poll);events.abort();observer.disconnect();win.cancelAnimationFrame(frameID);if(save)save.onclick=oldSave;};
 }

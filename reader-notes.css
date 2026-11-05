@@ -1,9 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600&display=swap');
 @font-face{font-family:'Anthropic Serif';src:url('./assets/fonts/anthropic-serif-roman.woff2') format('woff2');font-style:normal;font-weight:300 800;font-display:swap}
 @font-face{font-family:'Anthropic Serif';src:url('./assets/fonts/anthropic-serif-italic.woff2') format('woff2');font-style:italic;font-weight:300 800;font-display:swap}
-:root,[data-theme="dark"],[data-theme="light"]{color-scheme:dark;--bg:#0a0a0a!important;--surface-secondary:#151515!important;--surface-code:#191919!important;--surface-raised:#202020!important;--ink:#eeede8!important;--ink-secondary:#bebeb8!important;--ink-tertiary:#999!important;--accent:#d8d8d2!important;--accent-hover:#fff!important;--accent-text:#dadad4!important;--highlight:#333!important;--line:#303030!important;--bench:#181818!important;--serif:'Anthropic Serif','Noto Serif SC','Songti SC','STSong','SimSun',serif!important;--sans:var(--serif)!important}
-html,body{background:#0a0a0a!important;color:#eeede8!important}body{font-family:var(--serif)!important;font-size:17px!important;line-height:1.9!important}
-.top{background:#0a0a0a!important;border-color:#252525!important}.wrap{display:block!important;max-width:960px!important;padding:36px 40px 100px!important}.wrap>.toc{display:none!important}main{min-width:0}main h1{font-size:clamp(26px,3.5vw,36px)!important;line-height:1.4!important}main h2{line-height:1.5!important}a{color:var(--accent-text)}
+:root,[data-theme="dark"]{color-scheme:dark;--bg:#0a0a0a!important;--surface-secondary:#151515!important;--surface-code:#191919!important;--surface-raised:#202020!important;--ink:#eeede8!important;--ink-secondary:#bebeb8!important;--ink-tertiary:#999!important;--accent:#d8d8d2!important;--accent-hover:#fff!important;--accent-text:#dadad4!important;--highlight:#333!important;--line:#303030!important;--bench:#181818!important;--serif:'Anthropic Serif','Noto Serif SC','Songti SC','STSong','SimSun',serif!important;--sans:var(--serif)!important}
+:root[data-theme="light"]{color-scheme:light;--bg:#f5f4f0!important;--surface-secondary:#eae9e4!important;--surface-code:#e8e7e2!important;--surface-raised:#fff!important;--ink:#1a1a18!important;--ink-secondary:#41413d!important;--ink-tertiary:#62625b!important;--accent:#33332e!important;--accent-hover:#000!important;--accent-text:#363630!important;--highlight:#dfded6!important;--line:#d0cfc7!important;--bench:#eae9e3!important;--mark:#e4d69f;--mark-note:#e8d3c1}
+html,body{background:var(--bg)!important;color:var(--ink)!important}body{font-family:var(--serif)!important;font-size:17px!important;line-height:1.9!important}
+.top{background:var(--bg)!important;border-color:var(--line)!important}.wrap{display:block!important;max-width:960px!important;padding:36px 40px 100px!important}.wrap>.toc{display:none!important}main{min-width:0}main h1{font-size:clamp(26px,3.5vw,36px)!important;line-height:1.4!important}main h2{line-height:1.5!important}a{color:var(--accent-text)}
 @media(max-width:640px){.wrap{padding:24px 20px 80px!important}body{font-size:16px!important}}
 
 /* Embedded annotations keep a usable hit area and a visible writing surface. */
@@ -13,3 +14,19 @@ html,body{background:#0a0a0a!important;color:#eeede8!important}body{font-family:
 :root[data-library-reader] .xr-card{box-sizing:border-box}
 :root[data-library-reader] .xr-card.inline{width:100%;max-width:100%}
 :root[data-library-reader] .xr-card textarea{min-height:76px;cursor:text;user-select:text;caret-color:#eee;line-height:1.8}
+
+/* Reading tools use labels and stable targets; the TOC floats above the text. */
+:root[data-library-reader] .top{position:sticky;top:0;left:0;z-index:40;gap:8px;padding:10px 20px;min-height:64px}
+:root[data-library-reader] .top button{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:72px;padding:0 14px;background:var(--surface-secondary);color:var(--ink);font:15px var(--serif);line-height:1.2}
+:root[data-library-reader] .top button:hover{background:var(--surface-raised)}
+:root[data-library-reader] .top button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+:root[data-library-reader] #xrTheme{background:var(--ink);color:var(--bg)}
+:root[data-library-reader] #xrTheme:hover{opacity:.85}
+:root[data-library-reader] #xrPen,:root[data-library-reader] #xrSave{display:none!important}
+:root[data-library-reader] .wrap{padding-top:24px!important}
+body.library-toc-open .wrap>.toc{display:block!important;position:fixed;z-index:45;top:70px;left:20px;width:min(340px,calc(100vw - 40px));max-height:calc(100dvh - 90px);overflow:auto;overscroll-behavior:contain;padding:16px;background:var(--surface-raised);color:var(--ink);box-shadow:0 8px 32px #0005;font:15px/1.6 var(--serif)} /* taste-skill-ignore: shadow belongs to the floating chapter menu */
+body.library-toc-open .toc a{display:block;overflow:visible;padding:10px 12px;min-height:44px;border:0;color:var(--ink-secondary)}
+body.library-toc-open .toc a:hover,body.library-toc-open .toc a:focus-visible{background:var(--surface-secondary);color:var(--ink);outline:2px solid var(--ink);outline-offset:-2px}
+body.library-toc-open .toc a.cur{background:var(--surface-secondary);color:var(--ink)}
+:root[data-library-reader] main :is(h2,h3){scroll-margin-top:88px}
+@media(max-width:640px){:root[data-library-reader] .top{padding-inline:16px}body.library-toc-open .wrap>.toc{left:16px;width:calc(100vw - 32px)}}

@@ -1,5 +1,5 @@
 import {warmReader} from './reader-preload.js?v=cloud-fast-20261105-v4';
-import {openReader} from './reader.js?v=cloud-fast-20261105-v4';
+import {openReader} from './reader.js?v=reader-tools-20261105';
 import {mergePapers,fromBase64,DRAFT_KEY} from './upload-core.js?v=cloud-fast-20261105-v4';
 import {paperKeywords,matchesPaper,keywordGroup,KEYWORD_GROUPS} from './search-core.js?v=cloud-fast-20261105-v4';
 import {setupUploader} from './upload.js?v=cloud-fast-20261105-v4';

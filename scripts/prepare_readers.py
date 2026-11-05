@@ -70,7 +70,7 @@ for paper in catalog['papers']:
    width,height=struct.unpack('>II',data[16:24]);attrs+=f' width="{width}" height="{height}"'
   return '<img'+attrs+'>'
  html=re.sub(r'<img\b([^>]*)>',image,html)
- html=html.replace('</head>','<link rel="stylesheet" href="../../reader-notes.css?v=cloud-fast-20261105-v4">\n</head>')
+ html=html.replace('</head>','<link rel="stylesheet" href="../../reader-notes.css?v=reader-tools-20261105">\n</head>')
  (directory/'view.html').write_text(html)
  paper['readerURL']=paper['readingURL'].rsplit('/',1)[0]+'/view.html'
  summary.append({'id':paper['id'],'original_html_bytes':before,'view_html_bytes':len(html.encode()),'reduction_percent':round((1-len(html.encode())/before)*100,1)})

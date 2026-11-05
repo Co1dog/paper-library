@@ -1,5 +1,5 @@
 import {ContinuousPDF} from './pdf-scroll.js?v=cloud-fast-20261105-v4';
-import {connectAnnotations} from './reader-annotations.js?v=cloud-fast-20261105-v4';
+import {connectAnnotations} from './reader-annotations.js?v=reader-tools-20261105';
 // The reader owns one PDF task and one commentary frame; closing releases both.
 import {paperKeywords,keywordGroup} from './search-core.js?v=cloud-fast-20261105-v4';
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -47,7 +47,7 @@ export function openReader(paper,{isDemo=false,showDialog}={}){
    if(!alive)return;clearTimeout(notesTimer);
    try{
     const inner=frame.contentDocument;
-    if(inner){inner.documentElement.dataset.theme='dark';const style=inner.createElement('link');style.rel='stylesheet';style.href=new URL('./reader-notes.css?v=cloud-fast-20261105-v4',import.meta.url).href;inner.head.append(style);annotations?.();annotations=connectAnnotations(frame,{toggle:$('notes-annotate'),download:$('notes-download'),status:$('notes-save-status'),filename:(paper.id||'paper')+'-notes.html',paperId:paper.id,cloudButton:$('notes-cloud'),originalURL:readerAssetURL(paper.readingURL)});}
+    if(inner){inner.documentElement.dataset.theme='dark';const style=inner.createElement('link');style.rel='stylesheet';style.href=new URL('./reader-notes.css?v=reader-tools-20261105',import.meta.url).href;inner.head.append(style);annotations?.();annotations=connectAnnotations(frame,{toggle:$('notes-annotate'),download:$('notes-download'),status:$('notes-save-status'),filename:(paper.id||'paper')+'-notes.html',paperId:paper.id,cloudButton:$('notes-cloud'),originalURL:readerAssetURL(paper.readingURL)});}
    }catch{}
    $('notes-message').hidden=true;frame.hidden=false;
   });
