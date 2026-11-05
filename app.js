@@ -1,7 +1,7 @@
-import {openReader} from './reader.js?v=reading-room-20261104-v2';
-import {mergePapers,fromBase64,DRAFT_KEY} from './upload-core.js?v=reading-room-20261104-v2';
-import {paperKeywords,matchesPaper,keywordGroup,KEYWORD_GROUPS} from './search-core.js?v=reading-room-20261104-v2';
-import {setupUploader} from './upload.js?v=reading-room-20261104-v2';
+import {openReader} from './reader.js?v=scroll-notes-20261105b';
+import {mergePapers,fromBase64,DRAFT_KEY} from './upload-core.js?v=scroll-notes-20261105b';
+import {paperKeywords,matchesPaper,keywordGroup,KEYWORD_GROUPS} from './search-core.js?v=scroll-notes-20261105b';
+import {setupUploader} from './upload.js?v=scroll-notes-20261105b';
 'use strict';
 const OWNER = 'Co1dog';
 const REPO = 'paper-library';

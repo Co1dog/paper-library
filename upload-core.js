@@ -1,5 +1,5 @@
 // GitHub stores files and their catalog record in one commit. No server or stored secret.
-import {normalizeKeywords} from './search-core.js?v=reading-room-20261104-v2';
+import {normalizeKeywords} from './search-core.js?v=scroll-notes-20261105b';
 export const OWNER = 'Co1dog';
 export const REPO = 'paper-library';
 export const BRANCH = 'main';
